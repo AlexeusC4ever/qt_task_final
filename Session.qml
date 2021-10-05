@@ -2,10 +2,12 @@ import QtQuick 2.0
 import QtQuick.Layouts 1.13
 
 Rectangle {
+    id: root
     property var modelForTable
     property var fieldmodel
 
     ListView{
+        id: listview
         anchors.fill: parent
         anchors.leftMargin: 10
         anchors.topMargin: 10
@@ -17,9 +19,6 @@ Rectangle {
                 color: model.decoration
                 text: model.display + ":  " +  model.edit
             }
-        }
-        Component.onCompleted: {
-            console.log();
         }
 
     }

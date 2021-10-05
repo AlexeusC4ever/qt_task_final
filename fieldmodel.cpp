@@ -39,8 +39,9 @@ FieldModel::FieldModel(const size_t rows, const size_t columns, QObject *parent)
         }
     }
 
-    connect(thr, SIGNAL(dfsFinished()), this, SIGNAL(sendCoordsOfOccupiedArea()));
-    connect(thr, SIGNAL(cycleIsReadyForRepaint(int)), this, SLOT(addVertexesToCycle(int)));
+//    connect(thr, SIGNAL(dfsFinished()), this, SIGNAL(sendCoordsOfOccupiedArea()));
+//    connect(thr, SIGNAL(cycleIsReadyForRepaint(int)), this, SLOT(addVertexesToCycle(int)));
+    connect(thr, SIGNAL(dfsFinished()), this, SLOT(getCoordsOfOccupiedArea()));
 }
 
 FieldModel::~FieldModel()
@@ -72,25 +73,25 @@ int FieldModel::columnCountForQml()
     return m_columns;
 }
 
-void FieldModel::addVertexesToCycle(int cycle)
-{
-    QVector<QPoint> result;
-    int player =  getCellByCoords(thr->getAreaForRepaint()[0])->player();
-    for(auto& coord: thr->getAreaForRepaint())
-    {
-        getCellByCoords(coord)->setArea(cycle);
-        QPoint a(coord.x, coord.y);
-        result.emplace_back(a);
-    }
+//void FieldModel::addVertexesToCycle(int cycle)
+//{
+//    QVector<QPoint> result;
+//    int player =  getCellByCoords(thr->getAreaForRepaint()[0])->player();
+//    for(auto& coord: thr->getAreaForRepaint())
+//    {
+//        getCellByCoords(coord)->setArea(cycle);
+//        QPoint a(coord.x, coord.y);
+//        result.emplace_back(a);
+//    }
 
-    m_vectorAreas[cycle - 1] = std::make_pair(result, player);
-//    if(thr->m_repaintMutex.try_lock())
-    thr->m_repaintMutex.unlock();
+//    m_vectorAreas[cycle - 1] = std::make_pair(result, player);
+////    if(thr->m_repaintMutex.try_lock())
+//    thr->m_repaintMutex.unlock();
 
-    qDebug() << result;
+//    qDebug() << result;
 
-    emit repaintAllAreas();
-}
+//    emit repaintAllAreas();
+//}
 
 int FieldModel::currentPlayer() const
 {
@@ -102,37 +103,80 @@ int FieldModel::currentPlayer() const
 //    m_currentPlayer = newCurrentPlayer;
 //}
 
-QVector<QPoint> FieldModel::getCoordsOfOccupiedArea()
+//QVector<QPoint> FieldModel::getCoordsOfOccupiedArea()
+//{
+////    m_vectorAreas.emplace_back(thr->getVertexesOfCycle());
+
+//    if(!thr->getVertexesOfCycle().size() || !thr->pointsToAdd())
+//        return QVector<QPoint>();
+
+//    emit addPoints(thr->pointsToAdd(), m_currentPlayer);
+
+//    int numberOfCycle = thr->getNumberOfCurrentCycle();
+
+//    if(numberOfCycle >= m_vectorAreas.size())
+//        m_vectorAreas.resize(numberOfCycle);
+
+//    QVector<QPoint> result;
+//    for(auto& coord: thr->getVertexesOfCycle())
+//    {
+//        getCellByCoords(coord)->setArea(numberOfCycle);
+//        QPoint a;
+//        a.setX(coord.x);
+//        a.setY(coord.y);
+////        qDebug() << a;
+//        result.emplace_back(a);
+//    }
+
+//    m_vectorAreas[numberOfCycle - 1] = std::make_pair(result, m_currentPlayer);
+
+//    if(m_movesMade == m_fieldSize)
+//        emit gameOver();
+
+//    emit repaintAllAreas();
+
+//    return result;
+//}
+
+void FieldModel::getCoordsOfOccupiedArea()
 {
 //    m_vectorAreas.emplace_back(thr->getVertexesOfCycle());
 
-    if(!thr->getVertexesOfCycle().size())
-        return QVector<QPoint>();
-
-    emit addPoints(thr->pointsToAdd(), m_currentPlayer);
-
-    int numberOfCycle = thr->getNumberOfCurrentCycle();
-
-    if(numberOfCycle >= m_vectorAreas.size())
-        m_vectorAreas.resize(numberOfCycle);
-
-    QVector<QPoint> result;
-    for(auto& coord: thr->getVertexesOfCycle())
+    emit addPoints(m_currentPlayer, thr->pointsToAdd());
+    if(thr->getVertexesOfCycle().size()/* || !thr->pointsToAdd()*/)
     {
-        getCellByCoords(coord)->setArea(numberOfCycle);
-        QPoint a;
-        a.setX(coord.x);
-        a.setY(coord.y);
-//        qDebug() << a;
-        result.emplace_back(a);
+
+    //    emit addPoints(thr->pointsToAdd(), m_currentPlayer);
+
+        int numberOfCycle = thr->getNumberOfCurrentCycle();
+
+        qDebug() << numberOfCycle;
+
+        if(numberOfCycle >= m_vectorAreas.size())
+            m_vectorAreas.resize(numberOfCycle);
+
+        QVector<QPoint> result;
+        for(auto& coord: thr->getVertexesOfCycle())
+        {
+            getCellByCoords(coord)->setArea(numberOfCycle);
+            QPoint a;
+            a.setX(coord.x);
+            a.setY(coord.y);
+    //        qDebug() << a;
+            result.emplace_back(a);
+        }
+        qDebug() << "PLAYER:" << m_currentPlayer;
+        m_vectorAreas[numberOfCycle - 1] = std::make_pair(result, m_currentPlayer);
+        emit repaintAllAreas();
+        return;
     }
 
-    m_vectorAreas[numberOfCycle - 1] = std::make_pair(result, m_currentPlayer);
+    emit changePlayer();
 
-    return result;
+    if(m_movesMade == m_fieldSize)
+        emit gameOver();
+
 }
-
-
 
 Coord FieldModel::getCoordsFormIndex(int index) const
 {
@@ -206,8 +250,9 @@ void FieldModel::dfsStart(int index, int player)
 //    qDebug() << getCoordsFormIndex(index).x << getCoordsFormIndex(index).y;
     if(index < 0 || index >= m_fieldSize) return;
 
+    ++m_movesMade;
+
     m_cells[index]->setPlayer(player);
-            qDebug() << player << "-----" << getCoordsFormIndex(index).x << getCoordsFormIndex(index).y;
 //    m_currentPlayer = player;
 //    a.emplace_back(Qt::EditRole);
     emit dataChanged(createIndex(index, 0), createIndex(index, 0), QVector<int> { Qt::EditRole });
@@ -222,6 +267,14 @@ QVector<QPoint> FieldModel::getAreaForPaint(int area)
         return QVector<QPoint>();
 
     return m_vectorAreas[area].first;
+}
+
+int FieldModel::getAreaOwner(int area)
+{
+    if(m_vectorAreas.empty())
+        return -1;
+
+    return m_vectorAreas[area].second;
 }
 
 void FieldModel::setCurrentPlayer(int newCurrentPlayer)

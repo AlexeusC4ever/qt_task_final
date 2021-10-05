@@ -31,10 +31,10 @@ public:
         READ areasCount
         CONSTANT)
 
-    Q_PROPERTY(
-        QVector<QPoint> coords
-        READ getCoordsOfOccupiedArea
-        CONSTANT)
+//    Q_PROPERTY(
+//        QVector<QPoint> coords
+//        READ getCoordsOfOccupiedArea
+//        CONSTANT)
 
     Q_PROPERTY(
         int columns
@@ -50,7 +50,7 @@ public:
     int fieldSize();
     int columnCountForQml();
     int rowCountForQml();
-    QVector<QPoint> getCoordsOfOccupiedArea();
+//    QVector<QPoint> getCoordsOfOccupiedArea();
     Coord getCoordsFormIndex(int index) const;
     int getIndexFormCoords(Coord index) const;
     Cell *getCellByCoords(Coord coords);
@@ -61,18 +61,22 @@ public:
     QVector<QPoint> *getAreaForIncludeNewVertexes(int area);
     Q_INVOKABLE void dfsStart(int index, int player);
     Q_INVOKABLE QVector<QPoint> getAreaForPaint(int area);
+    Q_INVOKABLE int getAreaOwner(int area);
 
     void setCurrentPlayer(int newCurrentPlayer);
 
     int currentPlayer() const;
 
 signals:
+    Q_INVOKABLE void changePlayer();
     Q_INVOKABLE void sendCoordsOfOccupiedArea();
     Q_INVOKABLE void repaintAllAreas();
     void addPoints(int player, int points);
+    void gameOver();
 
-public slots:
-    void addVertexesToCycle(int cycle);
+private slots:
+    void getCoordsOfOccupiedArea();
+//    void addVertexesToCycle(int cycle);
 
 private:
     std::vector<Cell *> m_cells;
@@ -82,6 +86,7 @@ private:
     VectorArea m_vectorAreas;
     DfsThread *thr;
     int m_currentPlayer;
+    int m_movesMade;
 
 };
 

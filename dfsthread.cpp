@@ -4,7 +4,8 @@
 DfsThread::DfsThread(FieldModel *model):
     m_pModel(model),
     m_currentArea(0),
-    m_areasCount(1)
+    m_areasCount(1),
+    m_pointsToAdd(0)
 {
 }
 
@@ -27,7 +28,7 @@ void DfsThread::run()
         }
     }
 
-    if(m_meetAreaFlagBegin && m_meetAreaFlagEnd)
+    if(m_currentArea == m_areasCount && m_pointsToAdd)
         ++m_areasCount;
 
     emit dfsFinished();
@@ -53,6 +54,7 @@ void DfsThread::resetForDfs()
     m_rememberArea = 0;
     m_meetAreaFlagBegin = false;
     m_meetAreaFlagEnd = false;
+    m_pointsToAdd = 0;
 }
 
 int DfsThread::lengthOfCycleCount()
@@ -256,16 +258,20 @@ int DfsThread::childrenInsideAreaCount(std::vector<Coord> &area)
                 else
                     areaOpened = false;
             }
-            else if(areaOpened && insideCell->isClickable()){
+            else if(areaOpened && /*insideCell->isClickable() &&*/
+                    insideCell->player() != m_pModel->getCellByCoords(area[0])->player() &&
+                    insideCell->player() != -1){
                 ++children;
-//                if(insideCell->player() && insideCell->player() != )   ДОБАВЛЕНИЕ ОЧКОВ
                 makeCellNonClickable(insideCell);
             }
-            if(insideCell->player() != m_pModel->getCellByCoords(area[0])->player())
-                ++children;
+//            if(insideCell->player() != m_pModel->getCellByCoords(area[0])->player() &&
+//                    insideCell->player() != -1 &&
+//                    insideCell->isClickable())
+//                ++children;
         }
         //do a traversing from different sides to count all
         areaOpened = false;
+
         for(int j = maxBottom; j <= maxTop; --j)
         {
             Cell *insideCell = m_pModel->getCellByCoords(Coord{i, j});
@@ -276,9 +282,10 @@ int DfsThread::childrenInsideAreaCount(std::vector<Coord> &area)
                 else
                     areaOpened = false;
             }
-            else if(areaOpened && insideCell->isClickable()){
+            else if(areaOpened && /*insideCell->isClickable() &&*/
+                    insideCell->player() != m_pModel->getCellByCoords(area[0])->player() &&
+                    insideCell->player() != -1){
                 ++children;
-//                if(insideCell->player() && insideCell->player() != )   ДОБАВЛЕНИЕ ОЧКОВ
                 makeCellNonClickable(insideCell);
             }
         }
@@ -460,7 +467,8 @@ void DfsThread::dfs(Cell *vertex)
 //                 m_vertexesForIncludeToCycle.emplace_back(vertex->getCoord());
 //            }
 
-            if(neighbours[i]->area())
+            if(neighbours[i]->area() &&
+                    neighbours[i]->player() == vertex->player())
                 m_currentArea = neighbours[i]->area();
 
             dfs(neighbours[i]);
@@ -498,7 +506,7 @@ void DfsThread::dfs(Cell *vertex)
 //    if(m_meetAreaFlagBegin && !m_meetAreaFlagEnd)
 //        vertex->setColor(Cell::VERTEXCOLOR::Black);
 //    else
-        vertex->setColor(Cell::VERTEXCOLOR::White);
+        vertex->setColor(Cell::VERTEXCOLOR::White/*Black*/);
 
 }
 

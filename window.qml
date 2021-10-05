@@ -13,15 +13,21 @@ ApplicationWindow{
 
     SessionModel{
         id: sessionmodel
+        onSendWinner:{
+
+        }
 
         model: FieldModel{
             id: fieldmodel
-            onSendCoordsOfOccupiedArea: {
-                paintarea.canvas.act = 1;
-                paintarea.canvas.requestPaint();
+            onChangePlayer: {
+                  sessionmodel.nextPlayer();
+//                paintarea.canvas.act = 1;
+//                paintarea.canvas.requestPaint();
             }
             onRepaintAllAreas: {
-                paintarea.canvas.repaintAreas();
+//                paintarea.canvas.repaintAreas();
+                paintarea.canvas.act = 1;
+                paintarea.canvas.requestPaint();
             }
         }
     }

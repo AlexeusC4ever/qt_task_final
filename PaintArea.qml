@@ -6,8 +6,6 @@ Rectangle {
     property var sessionModel
     property var modelForField: sessionModel.model
     property alias canvas: canvas
-//    property alias player1color: player1color
-//    property alias player2color: player2color
 
     id: root
     visible: true
@@ -22,17 +20,25 @@ Rectangle {
 //                repaintAreas();
             }
             else if(act == 1){
-                var areaNumber = modelForField.areasCount - 1;
-                var coords = modelForField.coords;
+                clear_canvas();
+                drawLines();
+                var areaNumber = modelForField.areasCount;
+//                var coords = modelForField.coords;
+//                for(var i = 0; i < areaNumber; ++i)
+//                {
+//                    var coords = modelForField.getAreaForPaint(i);
+////                    console.log(i);
+//                    drawOccupiedArea(coords);
+//                }
+                repaintAreas();
+                act = 0;
+                modelForField.changePlayer();
+//                drawOccupiedArea(coords);
 
-                drawOccupiedArea(coords);
-                sessionmodel.nextPlayer();
             }
         }
 
         property int act: 0
-        property var player1color
-        property var player2color
 
         GridView{
             id: gridview
@@ -56,7 +62,7 @@ Rectangle {
                         onClicked: {
                             if(cell.occupiedByPlayer != -1 || !cell.isClickable) return;
                             cell.occupiedByPlayer = sessionmodel.player;
-                            cell.drawingcanvas.drawPoint(sessionmodel.playerColor);
+                            cell.drawingcanvas.drawPoint(sessionmodel.playerColor(sessionmodel.player));
                             canvas.pointSet(cell.index, cell.occupiedByPlayer);
                         }
                     }
@@ -66,36 +72,39 @@ Rectangle {
 
         function repaintAreas()
         {
+            console.log(modelForField.areasCount);
             for(var i = 0; i < modelForField.areasCount; ++i)
             {
                 var coordsOfArea = modelForField.getAreaForPaint(i);
-                drawOccupiedArea(coordsOfArea);
+                var areaOwner = modelForField.getAreaOwner(i);
+                if(areaOwner === -1) return;
+                drawOccupiedArea(coordsOfArea, areaOwner);
             }
         }
 
         function pointSet(index, player)
         {
-//            console.log(index, player);
             fieldmodel.dfsStart(index, player);
-//            fieldmodel.modelReset()
         }
 
-        function drawOccupiedArea(coords)
+        function drawOccupiedArea(coords, player)
         {
+            console.log("QMLPLAYER:", player);
             if (!coords.length) return
             var arrayOfCoords = coords;
-//            console.log(arrayOfCoords)
+
+            var color = sessionModel.playerColor(player);
+            var areaColor = sessionModel.playerColorForArea(player);
 
             var width = gridview.cellWidth;
             var height = gridview.cellHeight;
 
             var ctx = getContext('2d');
             ctx.lineWidth = 2;
-            ctx.strokeStyle = sessionmodel.playerColor;
 
-            var colorForArea = sessionmodel.playerColorForArea;
-
-            ctx.fillStyle =  colorForArea;
+            ctx.strokeStyle = color;
+            ctx.fillStyle =  areaColor;
+//            console.log("DRAW", color, areaColor);
             ctx.beginPath();
 
             ctx.moveTo((arrayOfCoords[0].y + 1) * width - 0.5 * width,
@@ -136,6 +145,12 @@ Rectangle {
             }
             ctx.closePath()
             ctx.stroke()
+        }
+
+        function clear_canvas()
+        {
+            var ctx = getContext("2d");
+            ctx.reset();
         }
     }
 }

@@ -6,6 +6,7 @@ SessionModel::SessionModel(QObject *parent)
 {
     m_players.emplace_back(Player{"Player1", "red", 0});
     m_players.emplace_back(Player{"Player2", "blue", 0});
+//    m_players.emplace_back(Player{"Player3", "green", 0});
 
 }
 
@@ -47,15 +48,14 @@ int SessionModel::player()
     return m_pModel->currentPlayer();
 }
 
-QColor SessionModel::playerColor()
+QColor SessionModel::playerColor(int player)
 {
-    int player = m_pModel->currentPlayer();
     return m_players[player].color;
 }
 
-QColor SessionModel::playerColorForArea()
+QColor SessionModel::playerColorForArea(int player)
 {
-    QColor color = playerColor();
+    QColor color = playerColor(player);
     color.setAlpha(50);
     return color;
 }
@@ -76,12 +76,31 @@ void SessionModel::setPModel(FieldModel *newPModel)
 {
     m_pModel = newPModel;
     connect(m_pModel, SIGNAL(addPoints(int,int)), this, SLOT(addPoints(int,int)));
+    connect(m_pModel, SIGNAL(gameOver()), this, SLOT(endGame()));
 }
 
-void SessionModel::addPoints(int points, int player)
+int SessionModel::winner()
 {
-    qDebug() << player << points;
+    return m_winner;
+}
+
+void SessionModel::addPoints(int player, int points)
+{
+//    qDebug() << player << points;
     m_players[player].points += points;
     emit dataChanged(createIndex(player, 0), createIndex(player, 0), QVector<int>{Qt::EditRole});
-    emit addedPoints();
+//    emit addedPoints();
+}
+
+void SessionModel::endGame()
+{
+   int winner = std::distance(m_players.begin(),
+                      std::max_element(m_players.begin(), m_players.end(), [](Player &a, Player &b){
+                          return a.points < b.points;
+                      }));
+
+   emit sendWinner();
+
+//   delete m_pModel;
+
 }

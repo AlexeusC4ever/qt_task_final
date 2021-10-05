@@ -24,15 +24,15 @@ public:
         READ player
         CONSTANT)
 
-    Q_PROPERTY(
-        QColor playerColor
-        READ playerColor
-        CONSTANT)
+//    Q_PROPERTY(
+//        QColor playerColor
+//        READ playerColor
+//        CONSTANT)
 
-    Q_PROPERTY(
-        QColor playerColorForArea
-        READ playerColorForArea
-        CONSTANT)
+//    Q_PROPERTY(
+//        QColor playerColorForArea
+//        READ playerColorForArea
+//        CONSTANT)
 
     Q_PROPERTY(
         FieldModel* model
@@ -40,26 +40,35 @@ public:
         WRITE setPModel
         /*NOTIFY modelChanged*/)
 
+    Q_PROPERTY(
+        int winner
+        READ winner
+        CONSTANT)
+
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
 
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
     FieldModel* pModel() const;
     int player();
-    QColor playerColor();
-    QColor playerColorForArea();
+    Q_INVOKABLE QColor playerColor(int);
+    Q_INVOKABLE QColor playerColorForArea(int);
     Q_INVOKABLE void nextPlayer();
     void setPModel(FieldModel *newPModel);
+    int winner();
 
 signals:
     Q_INVOKABLE void addedPoints();
+    Q_INVOKABLE void sendWinner();
 
 private slots:
     void addPoints(int player, int points);
+    void endGame();
 
 private:
     std::vector<Player> m_players;
     FieldModel *m_pModel;
+    int m_winner;
 
 };
 
