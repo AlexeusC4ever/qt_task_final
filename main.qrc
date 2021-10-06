@@ -7,4 +7,5 @@
         <file>PaintArea.qml</file>
         <file>Session.qml</file>
     </qresource>
+    <qresource prefix="/savedgames"/>
 </RCC>

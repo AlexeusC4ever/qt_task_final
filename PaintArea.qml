@@ -17,24 +17,15 @@ Rectangle {
         onPaint: {
             if(act == 0){
                 drawLines();
-//                repaintAreas();
+                repaintAreas();
             }
             else if(act == 1){
                 clear_canvas();
                 drawLines();
                 var areaNumber = modelForField.areasCount;
-//                var coords = modelForField.coords;
-//                for(var i = 0; i < areaNumber; ++i)
-//                {
-//                    var coords = modelForField.getAreaForPaint(i);
-////                    console.log(i);
-//                    drawOccupiedArea(coords);
-//                }
                 repaintAreas();
                 act = 0;
                 modelForField.changePlayer();
-//                drawOccupiedArea(coords);
-
             }
         }
 
@@ -42,6 +33,7 @@ Rectangle {
 
         GridView{
             id: gridview
+
             z: -1
             anchors.fill: parent
             cellHeight: canvas.height / gridview.model.rows
@@ -49,30 +41,51 @@ Rectangle {
             model: modelForField
 
             delegate: Item{
+                id: itemdelegate
                 height: gridview.cellHeight
                 width: gridview.cellWidth
+
                 Cell{
                     id: cell
                     anchors.fill: parent
                     property int index: model.index
                     property int occupiedByPlayer: model.edit
                     property int isClickable: model.display
+
+
                     MouseArea{
+                        id: mousearea
                         anchors.fill: parent
                         onClicked: {
                             if(cell.occupiedByPlayer != -1 || !cell.isClickable) return;
                             cell.occupiedByPlayer = sessionmodel.player;
-                            cell.drawingcanvas.drawPoint(sessionmodel.playerColor(sessionmodel.player));
+                            drawPointRequest(cell.occupiedByPlayer);
                             canvas.pointSet(cell.index, cell.occupiedByPlayer);
                         }
+
+//                        signal draw()
+//                        onDraw:{
+//                            console.log("DRAW");
+//                            drawPointRequest();
+//                        }
+
+                        function drawPointRequest(player)
+                        {
+//                            cell.occupiedByPlayer = sessionmodel.player;
+                            if(player !== -1)
+                                cell.drawingcanvas.drawPoint(sessionmodel.playerColor(player));
+                        }
+
                     }
+                }
+                Component.onCompleted: {
+                    mousearea.drawPointRequest(cell.occupiedByPlayer);
                 }
             }
         }
 
         function repaintAreas()
         {
-            console.log(modelForField.areasCount);
             for(var i = 0; i < modelForField.areasCount; ++i)
             {
                 var coordsOfArea = modelForField.getAreaForPaint(i);
@@ -89,7 +102,6 @@ Rectangle {
 
         function drawOccupiedArea(coords, player)
         {
-            console.log("QMLPLAYER:", player);
             if (!coords.length) return
             var arrayOfCoords = coords;
 

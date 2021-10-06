@@ -13,7 +13,8 @@ void DfsThread::run()
 {
 //    sleep(10);
 
-    m_currentArea = m_areasCount;
+    m_currentArea = m_pModel->areasCount() + 1;
+    qDebug() << m_currentArea;
 
     dfs(m_pStartCell);
 

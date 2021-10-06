@@ -17,6 +17,18 @@ ApplicationWindow{
 
         }
 
+        onModelChanged: {
+            console.log("RESET");
+            modelReset();
+            model.modelReset();
+//            paintarea.gridview.draw();
+        }
+
+//        Connections {
+//            target: fieldmodel
+//            onModelReset:
+//        }
+
         model: FieldModel{
             id: fieldmodel
             onChangePlayer: {

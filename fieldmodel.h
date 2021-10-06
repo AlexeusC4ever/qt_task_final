@@ -58,14 +58,16 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     void makeCellNonClickable(Cell *cell);
     int areasCount();
+    void setCurrentPlayer(int newCurrentPlayer);
+    int currentPlayer() const;
     QVector<QPoint> *getAreaForIncludeNewVertexes(int area);
     Q_INVOKABLE void dfsStart(int index, int player);
     Q_INVOKABLE QVector<QPoint> getAreaForPaint(int area);
     Q_INVOKABLE int getAreaOwner(int area);
-
-    void setCurrentPlayer(int newCurrentPlayer);
-
-    int currentPlayer() const;
+//    Q_INVOKABLE void saveModel(QString &fileName);
+    void setNeighbours();
+    friend QDataStream& operator>>( QDataStream& d, FieldModel& model);
+    friend QDataStream& operator<<( QDataStream& d, const FieldModel& model);
 
 signals:
     Q_INVOKABLE void changePlayer();
@@ -76,18 +78,19 @@ signals:
 
 private slots:
     void getCoordsOfOccupiedArea();
-//    void addVertexesToCycle(int cycle);
+//    void addVertexesToCycle(int cycle);    
 
 private:
     std::vector<Cell *> m_cells;
-    const size_t m_rows;
-    const size_t m_columns;
-    const size_t m_fieldSize;
+    size_t m_rows;
+    size_t m_columns;
+    size_t m_fieldSize;
     VectorArea m_vectorAreas;
     DfsThread *thr;
     int m_currentPlayer;
     int m_movesMade;
 
 };
+
 
 #endif // FIELDMODEL_H

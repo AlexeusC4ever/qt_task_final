@@ -1,5 +1,6 @@
 #include "dfsthread.h"
 #include "fieldmodel.h"
+#include <QColor>
 
 
 FieldModel::FieldModel(const size_t rows, const size_t columns, QObject *parent)
@@ -22,22 +23,7 @@ FieldModel::FieldModel(const size_t rows, const size_t columns, QObject *parent)
         m_cells[i] = new Cell(getCoordsFormIndex(i));
     }
 
-    for(int i = 0; i < rows; ++i)
-    {
-        for(int j = 0; j < columns; ++j)
-        {
-            std::vector<Cell *> neighbours;
-            for(int row = i - 1; row < i + 2; ++row) {
-                for(int column = j - 1; column < j + 2; ++column) {
-                    if(row >= 0 && row < rows && column >= 0 && column < columns
-                            && !(row == i && column == j)){
-                        neighbours.push_back(getCellByCoords(Coord{row, column}));
-                    }
-                }
-            }
-            getCellByCoords(Coord{i, j})->setNeighbours(std::move(neighbours));
-        }
-    }
+    setNeighbours();
 
 //    connect(thr, SIGNAL(dfsFinished()), this, SIGNAL(sendCoordsOfOccupiedArea()));
 //    connect(thr, SIGNAL(cycleIsReadyForRepaint(int)), this, SLOT(addVertexesToCycle(int)));
@@ -141,7 +127,6 @@ int FieldModel::currentPlayer() const
 void FieldModel::getCoordsOfOccupiedArea()
 {
 //    m_vectorAreas.emplace_back(thr->getVertexesOfCycle());
-
     emit addPoints(m_currentPlayer, thr->pointsToAdd());
     if(thr->getVertexesOfCycle().size()/* || !thr->pointsToAdd()*/)
     {
@@ -150,7 +135,7 @@ void FieldModel::getCoordsOfOccupiedArea()
 
         int numberOfCycle = thr->getNumberOfCurrentCycle();
 
-        qDebug() << numberOfCycle;
+//        qDebug() << numberOfCycle;
 
         if(numberOfCycle >= m_vectorAreas.size())
             m_vectorAreas.resize(numberOfCycle);
@@ -165,7 +150,7 @@ void FieldModel::getCoordsOfOccupiedArea()
     //        qDebug() << a;
             result.emplace_back(a);
         }
-        qDebug() << "PLAYER:" << m_currentPlayer;
+//        qDebug() << "PLAYER:" << m_currentPlayer;
         m_vectorAreas[numberOfCycle - 1] = std::make_pair(result, m_currentPlayer);
         emit repaintAllAreas();
         return;
@@ -277,8 +262,123 @@ int FieldModel::getAreaOwner(int area)
     return m_vectorAreas[area].second;
 }
 
+void FieldModel::setNeighbours()
+{
+    for(int i = 0; i < m_rows; ++i)
+    {
+        for(int j = 0; j < m_columns; ++j)
+        {
+            std::vector<Cell *> neighbours;
+            for(int row = i - 1; row < i + 2; ++row) {
+                for(int column = j - 1; column < j + 2; ++column) {
+                    if(row >= 0 && row < m_rows && column >= 0 && column < m_columns
+                            && !(row == i && column == j)){
+                        neighbours.push_back(getCellByCoords(Coord{row, column}));
+                    }
+                }
+            }
+            getCellByCoords(Coord{i, j})->setNeighbours(std::move(neighbours));
+        }
+    }
+}
+
 void FieldModel::setCurrentPlayer(int newCurrentPlayer)
 {
     m_currentPlayer = newCurrentPlayer;
+}
+
+QDataStream& operator<<(QDataStream& d, const FieldModel& model)
+{
+    d << model.m_rows << model.m_columns << model.m_fieldSize;
+    for(int i = 0; i < model.m_fieldSize; ++i)
+    {
+        Cell *cell = model.m_cells[i];
+        d << cell->getColor();
+        d << cell->getCoord().x << cell->getCoord().y;
+        d << cell->player();
+        d << cell->area();
+        d << cell->isClickable();
+    }
+    d << model.m_vectorAreas.size();
+
+    for(int i = 0; i < model.m_vectorAreas.size(); i++)
+    {
+        int size = model.m_vectorAreas[i].first.count();
+        int player = model.m_vectorAreas[i].second;
+        d << size;
+        for(int j = 0; j < size; ++j)
+        {
+            d << model.m_vectorAreas[i].first[j];
+        }
+        d << player;
+    }
+
+    d <<  model.m_currentPlayer;
+    return d;
+}
+
+QDataStream& operator>>( QDataStream& d, FieldModel& model)
+{
+    d >> model.m_rows >> model.m_columns >> model.m_fieldSize;
+
+    model.m_cells.resize(model.m_fieldSize);
+
+    for(int i = 0; i < model.m_fieldSize; i++)
+    {
+        Cell::VERTEXCOLOR cellColor;
+        Coord cellCoord;
+        int player;
+        int area;
+        bool isClickable;
+
+        d >> cellColor;
+        d >> cellCoord.x;
+        d >> cellCoord.y;
+        d >> player;
+        d >> area;
+        d >> isClickable;
+
+        Cell *cell = new Cell(cellCoord);
+        cell->setColor(cellColor);
+        cell->setPlayer(player);
+        cell->setArea(area);
+        cell->setClickable(isClickable);
+        model.m_cells[i] = cell;
+        qDebug() << i << "LOAD-----" << model.m_cells[i]->getColor() << model.m_cells[i]->getCoord().x <<
+                    model.m_cells[i]->getCoord().y << model.m_cells[i]->player() << model.m_cells[i]->area() << model.m_cells[i]->isClickable();
+    }
+
+    size_t vectorAreasSize = 0;
+
+    model.setNeighbours();
+
+    d >> vectorAreasSize;
+    qDebug() << "AREASLOADED:" << vectorAreasSize;
+
+    model.m_vectorAreas.resize(vectorAreasSize);
+
+    for(size_t i = 0; i < vectorAreasSize; ++i)
+    {
+        int size = 0;
+        int player = 0;
+        d >> size;
+        model.m_vectorAreas[i].first.resize(size);
+        for(int j = 0; j < size; ++j)
+        {
+            d >> model.m_vectorAreas[i].first[j];
+        }
+        d >> model.m_vectorAreas[i].second;
+    }
+
+    emit model.repaintAllAreas();
+
+    d >> model.m_currentPlayer;
+
+//    int tryda = 0;
+//    QColor color;
+//    d >> tryda;
+//    d >> color;
+
+    return d;
 }
 

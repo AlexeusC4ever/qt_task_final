@@ -25,11 +25,11 @@ public:
 //     FirstPlayer
 //     SenondPlayer)
 
-    Q_PROPERTY
-    (int occupiedByPlayer
-/*     READ value
-     WRITE setValue
-     NOTIFY valueChanged*/)
+//    Q_PROPERTY
+//    (int occupiedByPlayer
+//     READ value
+//     WRITE setValue
+//     NOTIFY valueChanged)
 
 //    Q_PROPERTY
 //    (bool isClickable

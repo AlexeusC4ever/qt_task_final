@@ -38,7 +38,7 @@ public:
         FieldModel* model
         READ pModel
         WRITE setPModel
-        /*NOTIFY modelChanged*/)
+        NOTIFY modelChanged)
 
     Q_PROPERTY(
         int winner
@@ -51,17 +51,22 @@ public:
 
     FieldModel* pModel() const;
     int player();
+    void setPModel(FieldModel *newPModel);
+    int winner();
     Q_INVOKABLE QColor playerColor(int);
     Q_INVOKABLE QColor playerColorForArea(int);
     Q_INVOKABLE void nextPlayer();
-    void setPModel(FieldModel *newPModel);
-    int winner();
 
 signals:
     Q_INVOKABLE void addedPoints();
     Q_INVOKABLE void sendWinner();
+    Q_INVOKABLE void saveGameRequest(QString &fileName);
+    Q_INVOKABLE void loadGameRequest(QString &fileName);
+    void modelChanged();
 
 private slots:
+    void saveModel(QString &fileName);
+    void loadModel(QString &fileName);
     void addPoints(int player, int points);
     void endGame();
 

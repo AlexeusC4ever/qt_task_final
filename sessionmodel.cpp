@@ -1,4 +1,6 @@
 #include "sessionmodel.h"
+#include <QFile>
+#include <QMessageBox>
 
 SessionModel::SessionModel(QObject *parent)
     : QAbstractListModel(parent)
@@ -7,7 +9,8 @@ SessionModel::SessionModel(QObject *parent)
     m_players.emplace_back(Player{"Player1", "red", 0});
     m_players.emplace_back(Player{"Player2", "blue", 0});
 //    m_players.emplace_back(Player{"Player3", "green", 0});
-
+    connect(this, SIGNAL(saveGameRequest(QString&)), this, SLOT(saveModel(QString&)));
+    connect(this, SIGNAL(loadGameRequest(QString&)), this, SLOT(loadModel(QString&)));
 }
 
 SessionModel::~SessionModel()
@@ -69,7 +72,70 @@ void SessionModel::nextPlayer()
         m_pModel->setCurrentPlayer(curPlayer + 1);
 
 //    qDebug() << curPlayer;
-//    return curPlayer;
+    //    return curPlayer;
+}
+
+void SessionModel::saveModel(QString &fileName)
+{   /*"qrc:/window.qml"*/
+    fileName = "savedgames/" + fileName + ".txt";
+
+    QFile fileForSave(fileName);
+
+    if (!fileForSave.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        qDebug() << "ERROR";
+        return;
+    }
+
+    QDataStream data(&fileForSave);
+    data << *m_pModel;
+    data << m_players.size();
+    for(int i = 0; i < m_players.size(); ++i)
+    {
+        data << m_players[i].color;
+        data << m_players[i].name;
+        data << m_players[i].points;
+    }
+    fileForSave.close();
+}
+
+void SessionModel::loadModel(QString &fileName)
+{   /*"qrc:/window.qml"*/
+    fileName = "savedgames/" + fileName + ".txt";
+
+    QFile fileForLoad(fileName);
+
+    if (!fileForLoad.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        qDebug() << "ERROR";
+        return;
+    }
+
+    QDataStream data(&fileForLoad);
+    data >> *m_pModel;
+
+    size_t playersSize = 0;
+    data >> playersSize;
+    qDebug() << "PLAYERS:" << playersSize;
+;
+    m_players.resize(playersSize);
+
+    for(size_t i = 0; i < playersSize; ++i)
+    {
+        data >> m_players[i].color;
+        data >> m_players[i].name;
+        data >> m_players[i].points;
+        qDebug() << m_players[i].color << m_players[i].name << m_players[i].points;
+    }
+    fileForLoad.close();
+
+//    emit dataChanged();
+    emit dataChanged(createIndex(0, 0), createIndex(m_players.size() - 1, 0), QVector<int> { Qt::DisplayRole,
+                     Qt::EditRole, Qt::DecorationRole});
+    int cellsMount = m_pModel->rowCount();
+    emit m_pModel->dataChanged(createIndex(0, 0), createIndex(cellsMount, 0), QVector<int> { Qt::DisplayRole,
+                     Qt::EditRole});
+    emit modelChanged();
 }
 
 void SessionModel::setPModel(FieldModel *newPModel)
