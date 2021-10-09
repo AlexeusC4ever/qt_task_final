@@ -297,6 +297,7 @@ QDataStream& operator<<(QDataStream& d, const FieldModel& model)
         d << cell->getCoord().x << cell->getCoord().y;
         d << cell->player();
         d << cell->area();
+        d << cell->isCounted();
         d << cell->isClickable();
     }
     d << model.m_vectorAreas.size();
@@ -329,6 +330,7 @@ QDataStream& operator>>( QDataStream& d, FieldModel& model)
         Coord cellCoord;
         int player;
         int area;
+        bool isCounted;
         bool isClickable;
 
         d >> cellColor;
@@ -336,16 +338,18 @@ QDataStream& operator>>( QDataStream& d, FieldModel& model)
         d >> cellCoord.y;
         d >> player;
         d >> area;
+        d >> isCounted;
         d >> isClickable;
 
         Cell *cell = new Cell(cellCoord);
         cell->setColor(cellColor);
         cell->setPlayer(player);
         cell->setArea(area);
+        cell->setCounted(isCounted);
         cell->setClickable(isClickable);
         model.m_cells[i] = cell;
-        qDebug() << i << "LOAD-----" << model.m_cells[i]->getColor() << model.m_cells[i]->getCoord().x <<
-                    model.m_cells[i]->getCoord().y << model.m_cells[i]->player() << model.m_cells[i]->area() << model.m_cells[i]->isClickable();
+//        qDebug() << i << "LOAD-----" << model.m_cells[i]->getColor() << model.m_cells[i]->getCoord().x <<
+//                    model.m_cells[i]->getCoord().y << model.m_cells[i]->player() << model.m_cells[i]->area() << model.m_cells[i]->isClickable();
     }
 
     size_t vectorAreasSize = 0;

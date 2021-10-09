@@ -61,7 +61,6 @@ void DfsThread::resetForDfs()
 int DfsThread::lengthOfCycleCount()
 {
     auto lastVertexInCycle = std::prev(m_vertexesInCicle.end());
-//    m_lengthOfCicle = 0;
     int bufcounter = 1;
 
     for(auto& vertex: m_vertexesInCicle)
@@ -71,9 +70,6 @@ int DfsThread::lengthOfCycleCount()
             break;
         ++bufcounter;
     }
-
-//    m_lengthOfCicle = m_vertexesInCicle.size() - bufcounter - 1;
-//    qDebug() << bufcounter;
     return m_vertexesInCicle.size() - bufcounter;
 }
 
@@ -125,8 +121,6 @@ std::vector<Coord> DfsThread::deleteExtraVertexes(std::vector<Coord> &cycle, int
 
 bool DfsThread::isValidCycle()
 {
-
-//    if(m_lengthOfCicle < m_finalLengthOfCicle ||
     if(m_lengthOfCicle <= 3){
         return false;
     }
@@ -158,57 +152,8 @@ bool DfsThread::isValidCycle()
 
     if(m_maxLocalBottomCoordinate - m_maxLocalTopCoordinate < 2 ||
             m_maxLocalRightCoordinate - m_maxLocalLeftCoordinate < 2){
-//        qDebug() << "m_maxBottomCoordinate - m_maxTopCoordinate < 2 ||";
         return false;
     }
-
-//    m_mountOfPointsInArea = childrenInsideAreaCount(m_vertexesInCicle);
-
-//        for(int i = m_maxLocalLeftCoordinate + 1; i <= m_maxLocalRightCoordinate - 1; ++i)
-//        {
-//            bool areaOpened = false;
-//            for(int j = m_maxLocalTopCoordinate; j <= m_maxLocalBottomCoordinate; ++j)
-//            {
-//                Cell *insideCell = m_pModel->getCellByCoords(Coord{i, j});
-//                if(insideCell->getColor() != Cell::VERTEXCOLOR::White)
-//                {
-//                    if(!areaOpened)
-//                        areaOpened = true;
-//                    else
-//                        areaOpened = false;
-//                }
-//                else if(areaOpened){
-//                    ++m_mountOfPointsInArea;
-//    //                if(insideCell->player() && insideCell->player() != )   ДОБАВЛЕНИЕ ОЧКОВ
-//                    makeCellNonClickable(insideCell);
-//                }
-//            }
-//            //do a traversing from different sides to count all
-//            areaOpened = false;
-//            for(int j = m_maxLocalBottomCoordinate; j <= m_maxLocalTopCoordinate; --j)
-//            {
-//                Cell *insideCell = m_pModel->getCellByCoords(Coord{i, j});
-//                if(insideCell->getColor() != Cell::VERTEXCOLOR::White)
-//                {
-//                    if(!areaOpened)
-//                        areaOpened = true;
-//                    else
-//                        areaOpened = false;
-//                }
-//                else if(areaOpened){
-//                    if(insideCell->isClickable())
-//                    {
-//                        ++m_mountOfPointsInArea;
-//    //                if(insideCell->player() && insideCell->player() != )   ДОБАВЛЕНИЕ ОЧКОВ
-//                        makeCellNonClickable(insideCell);
-//                    }
-//                }
-//            }
-//        }
-
-
-
-//        qDebug() << "CHILDREN:" << m_mountOfPointsInArea;
 
         if(m_mountOfPointsInArea < m_finalMountOfPointsInArea)
             return false;
@@ -252,23 +197,22 @@ int DfsThread::childrenInsideAreaCount(std::vector<Coord> &area)
         for(int j = maxTop; j <= maxBottom; ++j)
         {
             Cell *insideCell = m_pModel->getCellByCoords(Coord{i, j});
-            if(insideCell->getColor() != Cell::VERTEXCOLOR::White)
+            if(insideCell->getColor() != Cell::VERTEXCOLOR::White &&
+                    insideCell->player() == m_pModel->getCellByCoords(area[0])->player())
             {
                 if(!areaOpened)
                     areaOpened = true;
                 else
                     areaOpened = false;
             }
-            else if(areaOpened && /*insideCell->isClickable() &&*/
+            else if(areaOpened && !insideCell->isCounted() &&
                     insideCell->player() != m_pModel->getCellByCoords(area[0])->player() &&
                     insideCell->player() != -1){
                 ++children;
+                insideCell->setCounted(true);
                 makeCellNonClickable(insideCell);
+                qDebug() << "COUNT";
             }
-//            if(insideCell->player() != m_pModel->getCellByCoords(area[0])->player() &&
-//                    insideCell->player() != -1 &&
-//                    insideCell->isClickable())
-//                ++children;
         }
         //do a traversing from different sides to count all
         areaOpened = false;
@@ -283,10 +227,11 @@ int DfsThread::childrenInsideAreaCount(std::vector<Coord> &area)
                 else
                     areaOpened = false;
             }
-            else if(areaOpened && /*insideCell->isClickable() &&*/
+            else if(areaOpened && !insideCell->isCounted() &&
                     insideCell->player() != m_pModel->getCellByCoords(area[0])->player() &&
                     insideCell->player() != -1){
                 ++children;
+                insideCell->setCounted(true);
                 makeCellNonClickable(insideCell);
             }
         }
@@ -297,127 +242,8 @@ int DfsThread::childrenInsideAreaCount(std::vector<Coord> &area)
 //        qDebug() << "CHILDREN:" << m_mountOfPointsInArea;
 }
 
-void DfsThread::includeNewVertexesToOldCycle()
-{
-    QVector<QPoint> *points = m_pModel->getAreaForIncludeNewVertexes(m_rememberArea - 1);
-
-    std::vector<Coord> firstLoop;
-    std::vector<Coord> secondLoop;
-//    firstLoop.reserve(m_vertexesForIncludeToCycle.size());
-//    secondLoop.reserve(m_vertexesForIncludeToCycle.size());
-    Cell *startCell = m_pStartIncludeCell;
-    Cell *endCell = m_pEndIncludeCell;
-
-    int error = 0;
-    int start = -1;
-    int end = -1;
-
-    for(int i = 0; i <= points->count(); ++i)
-    {
-        if(i == points->count()) i = 0;
-
-        if((*points)[i].x() == startCell->getCoord().x &&
-                (*points)[i].y() == startCell->getCoord().y)
-        {
-            start = i;
-            if(end != -1)
-                break;
-        }
-
-        else if((*points)[i].x() == endCell->getCoord().x &&
-                (*points)[i].y() == endCell->getCoord().y)
-        {
-            end = i;
-            if(start != -1)
-                break;
-        }
-
-    }
-
-//    bool backFlag = (end < start);
-
-//    std::copy(m_vertexesForIncludeToCycle.begin(),
-//              m_vertexesForIncludeToCycle.end(), firstLoop.begin());
-//    std::copy(m_vertexesForIncludeToCycle.begin(),
-//              m_vertexesForIncludeToCycle.end(), secondLoop.begin());
-
-    auto startIter = m_vertexesForIncludeToCycle.begin();
-    auto endIter = m_vertexesForIncludeToCycle.end();
-    int counter = 0;
-    while(startIter != endIter)
-    {
-        firstLoop.emplace_back(Coord{startIter->x, startIter->y});
-        secondLoop.emplace_back(Coord{startIter->x, startIter->y});
-//        qDebug() << startIter->x << startIter->y;
-        ++startIter;
-    }
-
-    for(int i = end; i <= points->size(); ++i)
-    {
-        if(i == points->size()) {
-            if(error){
-                qDebug() << "can't find1 start";
-            }
-            i = 0;
-            error = 1;
-        }
-
-        firstLoop.emplace_back(Coord{(*points)[i].x(), (*points)[i].y()});
-
-        if(i == start) break;
-
-    }
-
-    error = 0;
-
-    for(int i = end; i >= -1; --i)
-    {
-        if(i == -1) {
-            if(error){
-                qDebug() << "can't find1 start";
-            }
-            i = points->size() - 1;
-            error = 1;
-        }
-
-        secondLoop.emplace_back(Coord{(*points)[i].x(), (*points)[i].y()});
-
-        if(i == start) break;
-
-    }
-
-    int childrenFirstLoop = childrenInsideAreaCount(firstLoop);
-
-    int childrenSecondLoop = childrenInsideAreaCount(firstLoop);
-
-//    std::lock_guard<std::mutex> mute(m_repaintMutex);
-    m_repaintMutex.lock();
-
-    if(childrenSecondLoop > childrenFirstLoop)
-    {
-        m_areaToRepaint = secondLoop;
-        m_pointsToAdd = childrenFirstLoop;
-    }
-    else
-    {
-        m_areaToRepaint = firstLoop;
-        m_pointsToAdd = childrenSecondLoop;
-    }
-
-
-//    for()
-    emit cycleIsReadyForRepaint(m_rememberArea);
-//    mute.~lock_guard();
-
-//    emit dfsFinished();
-//    sleep(5);
-
-//    qDebug() << "FINISH";
-}
-
 void DfsThread::dfs(Cell *vertex)
 {
-//    vertex->isVisited = true;
     if(isInterruptionRequested()) return;
     m_vertexesInCicle.emplace_back(vertex->getCoord());
 
@@ -438,44 +264,14 @@ void DfsThread::dfs(Cell *vertex)
 
         if(neighbours[i]->getColor() == Cell::VERTEXCOLOR::White)
         {
-//            if(neighbour->area())
-//            {
-////                m_vertexesForIncludeToCycle.emplace_back(vertex->getCoord());
-//                if(!m_meetAreaFlagBegin) {
-//                    m_vertexesForIncludeToCycle.emplace_back(vertex->getCoord());
-//                    m_rememberArea = neighbour->area();
-//                    qDebug() <<  neighbour->area();
-//                    m_pStartIncludeCell = neighbour;
-//                    m_meetAreaFlagBegin = true;
-//                    qDebug() << "MakeTRUE";
-//                }
-//                else{
-//                    if(!(vertex->getCoord() == m_vertexesForIncludeToCycle[0])){
-//                        m_meetAreaFlagEnd = true;
-//                        m_vertexesForIncludeToCycle.emplace_back(vertex->getCoord());
-//                        qDebug() << "END";
-//                     }
-//                    m_pEndIncludeCell = neighbour;
-//                    includeNewVertexesToOldCycle();
-////                    m_meetAreaFlagBegin = false;
-//                }
-//                continue;
-//            }
-
-//            else if(m_meetAreaFlagBegin && !m_meetAreaFlagEnd)
-//            {
-//                qDebug() << "ADDDD";
-//                 m_vertexesForIncludeToCycle.emplace_back(vertex->getCoord());
-//            }
-
-            if(neighbours[i]->area() &&
-                    neighbours[i]->player() == vertex->player())
-                m_currentArea = neighbours[i]->area();
+            //-------------------------------------------------------
+//            if(neighbours[i]->area() &&
+//                    neighbours[i]->player() == vertex->player())
+//                m_currentArea = neighbours[i]->area();
+            //-------------------------------------------------------
 
             dfs(neighbours[i]);
 
-//            if(!m_meetAreaFlagEnd)
-//                m_vertexesForIncludeToCycle.pop_back();
         }
 
         /**/else if(neighbours[i]->getColor() == Cell::VERTEXCOLOR::Grey)
@@ -494,7 +290,7 @@ void DfsThread::dfs(Cell *vertex)
                             deleteExtraVertexes(m_finalVertexesInCicle, m_finalLengthOfCicle));
                 m_pointsToAdd = childrenInsideAreaCount(m_finalVertexesInCicle);
 
-//                childrenInsideAreaCount();
+                m_pModel->getCoordsOfOccupiedArea();
 
                 m_lengthOfCicle = m_vertexesInCicle.size();
             }
@@ -504,9 +300,6 @@ void DfsThread::dfs(Cell *vertex)
     }
     m_vertexesInCicle.pop_back();
 
-//    if(m_meetAreaFlagBegin && !m_meetAreaFlagEnd)
-//        vertex->setColor(Cell::VERTEXCOLOR::Black);
-//    else
         vertex->setColor(Cell::VERTEXCOLOR::White/*Black*/);
 
 }

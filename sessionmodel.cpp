@@ -3,8 +3,8 @@
 #include <QMessageBox>
 
 SessionModel::SessionModel(QObject *parent)
-    : QAbstractListModel(parent)
-//      m_pModel(new FieldModel)
+    : QAbstractListModel(parent),
+      m_pModel(NULL/*new FieldModel*/)
 {
     m_players.emplace_back(Player{"Player1", "red", 0});
     m_players.emplace_back(Player{"Player2", "blue", 0});
@@ -140,6 +140,8 @@ void SessionModel::loadModel(QString &fileName)
 
 void SessionModel::setPModel(FieldModel *newPModel)
 {
+    if(m_pModel)
+        delete m_pModel;
     m_pModel = newPModel;
     connect(m_pModel, SIGNAL(addPoints(int,int)), this, SLOT(addPoints(int,int)));
     connect(m_pModel, SIGNAL(gameOver()), this, SLOT(endGame()));

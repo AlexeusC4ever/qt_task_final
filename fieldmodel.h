@@ -76,7 +76,7 @@ signals:
     void addPoints(int player, int points);
     void gameOver();
 
-private slots:
+public slots:
     void getCoordsOfOccupiedArea();
 //    void addVertexesToCycle(int cycle);    
 

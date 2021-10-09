@@ -8,6 +8,7 @@ Cell::Cell(Coord coor, QObject *parent) :
     m_color(VERTEXCOLOR::White),
 //    isVisited(false)
     m_clickable(true),
+    m_counted(false),
     m_area(0)
 {
 }
@@ -66,4 +67,14 @@ int Cell::player() const
 void Cell::setPlayer(int player)
 {
     m_occupiedByPlayer = player;
+}
+
+bool Cell::isCounted()
+{
+    return m_counted;
+}
+
+void Cell::setCounted(bool newCounted)
+{
+    m_counted = newCounted;
 }

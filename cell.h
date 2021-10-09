@@ -57,8 +57,11 @@ public:
     void setClickable(bool click);
     int player() const;
     void setPlayer(int player);
+    bool isCounted();
+    void setCounted(bool newCounted);
 
     std::vector<Cell*> m_neighbours;
+
 signals:
 //    void valueChanged(/*bool value*/);
 
@@ -67,6 +70,7 @@ private:
     Coord m_coords;
     int m_occupiedByPlayer;
     int m_area;
+    bool m_counted;
     bool m_clickable;
 
 };
