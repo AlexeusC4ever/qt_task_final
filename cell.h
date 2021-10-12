@@ -21,10 +21,6 @@ public:
     void setCoord(Coord coor);
     Coord getCoord() const;
 
-//    Q_ENUM(
-//     FirstPlayer
-//     SenondPlayer)
-
 //    Q_PROPERTY
 //    (int occupiedByPlayer
 //     READ value
@@ -47,7 +43,7 @@ public:
     enum VERTEXCOLOR{
         White, Grey, Black
     };
-//    bool isVisited;
+
     VERTEXCOLOR getColor() const;
     int area();
     void setArea(int area);

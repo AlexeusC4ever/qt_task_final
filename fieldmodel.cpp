@@ -9,7 +9,8 @@ FieldModel::FieldModel(const size_t rows, const size_t columns, QObject *parent)
       m_columns(columns),
       m_fieldSize(columns * rows),
       thr(new DfsThread(this)),
-      m_currentPlayer(0)
+      m_currentPlayer(0),
+      m_onlineGame(false)
 {
     m_vectorAreas.reserve(m_fieldSize);
 //    for(auto &vec: m_vectorAreas)
@@ -65,6 +66,11 @@ int FieldModel::currentPlayer() const
 
 void FieldModel::getCoordsOfOccupiedArea()
 {
+//    for(int i = 0; i < m_fieldSize; ++i)
+//        setData(createIndex(i, 0), QVariant::fromValue(0));
+
+//    qDebug() << "getCoordsOfOccupiedArea";
+
     if(m_onlineGame)
         emit addPoints(m_currentOnlinePlayer, thr->pointsToAdd());
     else
@@ -171,6 +177,34 @@ QVariant FieldModel::data(const QModelIndex &index, int role) const
 
     return QVariant();
 }
+
+//bool FieldModel::setData(const QModelIndex &index, const QVariant &value, int role)
+//{
+//    if(!index.isValid() || (role != Qt::EditRole && role != Qt::DisplayRole))
+//        return false;
+
+//    if(index.row() >= this->m_fieldSize)
+//        return false;
+
+//    const int rowIndex(static_cast<int>(index.row()));
+
+////    qDebug() << m_cells[rowIndex]->player();
+
+//    if(role == Qt::EditRole)
+//    {
+//        m_cells[rowIndex]->setPlayer(value.toInt());
+//        emit dataChanged(index, index, QVector<int>{role});
+//        return true;
+//    }
+//    else if(role == Qt::DisplayRole)
+//    {
+//        m_cells[rowIndex]->setPlayer(value.toBool());
+//        emit dataChanged(index, index, QVector<int>{role});
+//        return true;
+//    }
+
+//    return false;
+//}
 
 
 void FieldModel::makeCellNonClickable(Cell *cell)
@@ -321,9 +355,9 @@ QDataStream& operator<<(QDataStream& d, const FieldModel& model)
 
 QDataStream& operator>>( QDataStream& d, FieldModel& model)
 {
-    d >> model.m_rows >> model.m_columns >> model.m_fieldSize;
+//    d >> model.m_rows >> model.m_columns >> model.m_fieldSize;
 
-    model.m_cells.resize(model.m_fieldSize);
+//    model.m_cells.resize(model.m_fieldSize);
 
     for(int i = 0; i < model.m_fieldSize; i++)
     {
@@ -386,4 +420,81 @@ QDataStream& operator>>( QDataStream& d, FieldModel& model)
 
     return d;
 }
+
+//QDataStream& operator>>( QDataStream& d, FieldModel& model)
+//{
+////    d >> model.m_rows >> model.m_columns >> model.m_fieldSize;
+
+////    model.m_cells.resize(model.m_fieldSize);
+
+//    std::vector<Cell *> newVectorCell;
+
+//    newVectorCell.reserve(model.m_fieldSize);
+
+//    for(int i = 0; i < model.m_fieldSize; i++)
+//    {
+//        Cell::VERTEXCOLOR cellColor;
+//        Coord cellCoord;
+//        int player;
+//        int area;
+//        bool isCounted;
+//        bool isClickable;
+
+//        d >> cellColor;
+//        d >> cellCoord.x;
+//        d >> cellCoord.y;
+//        d >> player;
+//        d >> area;
+//        d >> isCounted;
+//        d >> isClickable;
+
+//        Cell *cell = new Cell(cellCoord);
+//        cell->setColor(cellColor);
+//        cell->setPlayer(player);
+//        cell->setArea(area);
+//        cell->setCounted(isCounted);
+//        cell->setClickable(isClickable);
+//        newVectorCell[i] = cell;
+////        qDebug() << i << "LOAD-----" << model.m_cells[i]->getColor() << model.m_cells[i]->getCoord().x <<
+////                    model.m_cells[i]->getCoord().y << model.m_cells[i]->player() << model.m_cells[i]->area() << model.m_cells[i]->isClickable();
+//    }
+
+//    for(auto &cell: model.m_cells)
+//        delete cell;
+
+//    model.m_cells = std::move(newVectorCell);
+
+//    size_t vectorAreasSize = 0;
+
+//    model.setNeighbours(model.m_cells, model.m_rows, model.m_columns);
+
+//    d >> vectorAreasSize;
+////    qDebug() << "AREASLOADED:" << vectorAreasSize;
+
+//    model.m_vectorAreas.resize(vectorAreasSize);
+
+//    for(size_t i = 0; i < vectorAreasSize; ++i)
+//    {
+//        int size = 0;
+//        int player = 0;
+//        d >> size;
+//        model.m_vectorAreas[i].first.resize(size);
+//        for(int j = 0; j < size; ++j)
+//        {
+//            d >> model.m_vectorAreas[i].first[j];
+//        }
+//        d >> model.m_vectorAreas[i].second;
+//    }
+
+//    emit model.repaintAllAreas();
+
+//    d >> model.m_currentPlayer;
+
+////    int tryda = 0;
+////    QColor color;
+////    d >> tryda;
+////    d >> color;
+
+//    return d;
+//}
 

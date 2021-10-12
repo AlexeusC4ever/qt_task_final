@@ -5,6 +5,8 @@ project(final_9)
 
 include_directories (${PROJECT_SOURCE_DIR})
 include_directories (${PROJECT_BINARY_DIR})
+include_directories(${PROJECT_SOURCE_DIR}/gameserver)
+include_directories(${PROJECT_BINARY_DIR}/gameserver)
 add_subdirectory(${PROJECT_SOURCE_DIR}/gameserver)
 
 find_package(Qt6 REQUIRED Widgets Network Qml Quick)
@@ -50,24 +52,20 @@ qt_add_resources(
     QRC_WRAPPERS
     main.qrc)
 
-qt_wrap_cpp(
-    NET_MOC_WRAPPERS
-    server-dlg.h)
+#qt_wrap_cpp(
+#    NET_MOC_WRAPPERS
+#    server-dlg.h)
 
-qt_wrap_ui(
-    NET_UIC_WRAPPERS
-    server-dlg.ui)
+#qt_wrap_ui(
+#    NET_UIC_WRAPPERS
+#    server-dlg.ui)
 
 add_executable(
     gameserver WIN32
     serverlauncher.cpp
-    server-dlg.cpp
-    server-dlg.h
-    ${NET_MOC_WRAPPERS}
-    ${NET_UIC_WRAPPERS}
     )
 
-target_link_libraries(gameserver Qt6::Widgets Qt6::Network)
+target_link_libraries(gameserver PRIVATE server)
 
 
 add_executable(final_9

@@ -1,4 +1,5 @@
 import QtQuick 2.0
+import cellItem 1.0
 
 
 Rectangle
@@ -8,6 +9,7 @@ Rectangle
     property var color;
     Canvas{
         id: drawingCanvas
+
         anchors.fill: parent
         onPaint: {
             if(!color) return;

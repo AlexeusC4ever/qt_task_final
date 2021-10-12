@@ -58,11 +58,18 @@ Rectangle {
         }
     }
 
+//    Connections{
+//        target: itemdelegate
+//        function () {
+//            mousearea.drawPointRequest(cell.occupiedByPlayer);
+//        }
+//    }
+
     id: root
     visible: true
     Canvas{
         id: canvas
-        z: gridview.z + 10
+        z: gridview.z + 1
         anchors.fill: parent
 
         onPaint: {
@@ -86,7 +93,6 @@ Rectangle {
 
         GridView{
             id: gridview
-
             z: -1
             anchors.fill: parent
             cellHeight: canvas.height / gridview.model.rows
@@ -97,18 +103,19 @@ Rectangle {
                 id: itemdelegate
                 height: gridview.cellHeight
                 width: gridview.cellWidth
+
                 Cell{
                     id: cell
                     anchors.fill: parent
                     property int index: model.index
                     property int occupiedByPlayer: model.edit
                     property int isClickable: model.display
-
+//                    drawingcanvas.z: canvas.z + 1
                     MouseArea{
                         id: mousearea
                         anchors.fill: parent
                         onClicked: {
-//                            console.log("FLAG:", sessionModel.onlineMoveFlag, cell.occupiedByPlayer, !cell.isClickable, canvas.dfsWorking);
+//                            console.log("CLICKED");
                             if(cell.occupiedByPlayer != -1 || !cell.isClickable || canvas.dfsWorking ||
                                     (sessionModel.model.onlineGame && !sessionModel.onlineMoveFlag))
                                 return;

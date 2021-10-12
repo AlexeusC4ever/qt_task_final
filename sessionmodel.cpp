@@ -4,7 +4,11 @@
 #include <QHostAddress>
 #include <QDataStream>
 #include <QTextStream>
+#include <QDialogButtonBox>
 #include <QString>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QLineEdit>
 #include <mutex>
 #include "sessionmodel.h"
 
@@ -17,7 +21,8 @@ SessionModel::SessionModel(QQmlApplicationEngine *engine, QObject *parent)
     : QAbstractListModel(parent),
       m_pModel(/*nullptr*/new FieldModel),
       m_pSocket(nullptr),
-      m_abilityToMakeMoveInOnline(false)
+      m_abilityToMakeMoveInOnline(false),
+      m_onlineGame(false)
 {
     m_players.emplace_back(Player{"Player1", "red", 0});
     m_players.emplace_back(Player{"Player2", "blue", 0});
@@ -36,6 +41,34 @@ SessionModel::SessionModel(QQmlApplicationEngine *engine, QObject *parent)
 
 //    m_pComponent->setData();
 //    connectRequest();
+    m_settingsDialog = new QDialog;
+    m_okButton = new QDialogButtonBox(QDialogButtonBox::Ok);
+    QHBoxLayout *widthLayout = new QHBoxLayout;
+    QHBoxLayout *heightLayout = new QHBoxLayout;
+    QVBoxLayout *mainLayout = new QVBoxLayout(m_settingsDialog);
+
+    m_pLineEditWidth = new QLineEdit;
+    m_pLabelWidth = new QLabel(tr("Columns:"));
+    m_pLineEditWidth->setText(QString::number(defaultFieldDimension));
+    m_pLabelWidth->setBuddy(m_pLineEditWidth);
+    widthLayout->addWidget(m_pLabelWidth);
+    widthLayout->addWidget(m_pLineEditWidth);
+
+    m_pLineEditHeight = new QLineEdit;
+    m_pLabelHeight = new QLabel(tr("Rows:"));
+    m_pLineEditHeight->setText(QString::number(defaultFieldDimension));
+    m_pLabelHeight->setBuddy(m_pLineEditHeight);
+    heightLayout->addWidget(m_pLabelHeight);
+    heightLayout->addWidget(m_pLineEditHeight);
+
+    mainLayout->addLayout(widthLayout);
+    mainLayout->addLayout(heightLayout);
+    mainLayout->addWidget(m_okButton);
+
+    m_settingsDialog->setLayout(mainLayout);
+
+    connect(m_okButton, SIGNAL(accepted()), this, SLOT(changeFieldModel()));
+    connect(m_okButton, SIGNAL(accepted()), m_settingsDialog, SLOT(hide()));
 }
 
 SessionModel::~SessionModel()
@@ -103,15 +136,9 @@ void SessionModel::nextPlayer()
     //    return curPlayer;
 }
 
-void SessionModel::tryChangeModel(int rows, int columns)
+void SessionModel::showSettingsDialog()
 {
-    FieldModel *newModel = new FieldModel(rows, columns);
-    if(m_pModel)
-        delete m_pModel;
-
-    m_pModel =  newModel;
-
-    emit modelChanged();
+    m_settingsDialog->show();
 }
 
 void SessionModel::connectRequest()
@@ -208,29 +235,42 @@ void SessionModel::loadModel(QString &fileName)
     }
 
     QDataStream data(&fileForLoad);
-    data >> *m_pModel;
+
+    size_t rows = 0;
+    size_t columns = 0;
+    size_t fieldSize = 0;
+
+    data >> rows >> columns >> fieldSize;
+
+    std::unique_ptr<FieldModel> newModel(new FieldModel(rows, columns));
+    std::vector<Player> newPlayers;
+
+    data >> *newModel;
 
     size_t playersSize = 0;
     data >> playersSize;
     qDebug() << "PLAYERS:" << playersSize;
-;
-    m_players.resize(playersSize);
+
+    newPlayers.resize(playersSize);
 
     for(size_t i = 0; i < playersSize; ++i)
     {
-        data >> m_players[i].color;
-        data >> m_players[i].name;
-        data >> m_players[i].points;
-        qDebug() << m_players[i].color << m_players[i].name << m_players[i].points;
+        data >> newPlayers[i].color;
+        data >> newPlayers[i].name;
+        data >> newPlayers[i].points;
+        qDebug() << newPlayers[i].color << m_players[i].name << m_players[i].points;
     }
     fileForLoad.close();
 
+    setPModel(newModel.release());
+    m_players = newPlayers;
+
 //    emit dataChanged();
-    emit dataChanged(createIndex(0, 0), createIndex(m_players.size() - 1, 0), QVector<int> { Qt::DisplayRole,
-                     Qt::EditRole, Qt::DecorationRole});
-    int cellsMount = m_pModel->rowCount();
-    emit m_pModel->dataChanged(createIndex(0, 0), createIndex(cellsMount, 0), QVector<int> { Qt::DisplayRole,
-                     Qt::EditRole});
+//    emit dataChanged(createIndex(0, 0), createIndex(m_players.size() - 1, 0), QVector<int> { Qt::DisplayRole,
+//                     Qt::EditRole, Qt::DecorationRole});
+//    int cellsMount = m_pModel->rowCount();
+//    emit m_pModel->dataChanged(createIndex(0, 0), createIndex(cellsMount, 0), QVector<int> { Qt::DisplayRole,
+//                     Qt::EditRole});
 
     emit modelChanged();
 }
@@ -241,8 +281,9 @@ void SessionModel::setPModel(FieldModel *newPModel)
 
     m_pModel = newPModel;
 
-    if(oldModel)
+    if(oldModel){
         delete oldModel;
+    }
 
     qDebug() << "SETTINGMODEL";
 
@@ -353,6 +394,12 @@ void SessionModel::onReadyRead()
     }
 //    emit m_pSocket->readyRead();
 
+}
+
+void SessionModel::changeFieldModel()
+{
+    setPModel(new FieldModel(m_pLineEditHeight->text().toInt(),
+                             m_pLineEditWidth->text().toInt()));
 }
 
 bool SessionModel::abilityToMakeMoveInOnline() const

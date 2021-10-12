@@ -29,8 +29,9 @@
 #include <QQmlError>
 #include <QtDebug>
 #include <QQmlApplicationEngine>
-#include "fieldmodel.h"
+//#include "fieldmodel.h"
 #include "sessionmodel.h"
+#include "cell.h"
 
 int main(int argc, char *argv[])
 {
@@ -38,7 +39,7 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine *engine = new QQmlApplicationEngine;
 
 //    QQmlComponent *pComponent = new QQmlComponent;
-
+    qmlRegisterType<Cell>("cellItem", 1, 0, "CellItem");
     SessionModel *pSessionModel = new SessionModel(engine);
     engine->rootContext()->setContextProperty("sessionModel", QVariant::fromValue(pSessionModel));
 

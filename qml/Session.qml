@@ -36,7 +36,7 @@ Rectangle {
             id: saveButton
             anchors.top: menu.top
             width: menu.width
-            height: parent.height / 4
+            height: parent.height / 4 - 5
             MouseArea{
                 anchors.fill: parent
                 Text{
@@ -53,7 +53,7 @@ Rectangle {
             id: loadButton
             anchors.top: saveButton.bottom
             width: menu.width
-            height: parent.height / 4
+            height: saveButton.height
             MouseArea{
                 anchors.fill: parent
                 Text{
@@ -70,7 +70,7 @@ Rectangle {
             id: networkButton
             anchors.top: loadButton.bottom
             width: menu.width
-            height: parent.height / 4
+            height: saveButton.height
             MouseArea{
                 anchors.fill: parent
                 Text{
@@ -80,6 +80,23 @@ Rectangle {
                 onClicked:{
                     console.log("NET");
                     sessionModel.connectRequest();
+                }
+            }
+        }
+        Button{
+            id: settingsButton
+            anchors.top: networkButton.bottom
+            width: menu.width
+            height: saveButton.height
+            MouseArea{
+                anchors.fill: parent
+                Text{
+                    anchors.centerIn: parent
+                    text: "НАСТРОЙКИ"
+                }
+                onClicked:{
+                    console.log("NET");
+                    sessionModel.showSettingsDialog();
                 }
             }
         }

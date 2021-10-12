@@ -11,6 +11,11 @@
 
 //class QTcpSocket;
 
+class QLabel;
+class QLineEdit;
+class QDialog;
+class QDialogButtonBox;
+
 struct Player{
     QString name;
     QColor color;
@@ -70,7 +75,7 @@ public:
     Q_INVOKABLE QColor playerColorForArea(int);
     Q_INVOKABLE void connectRequest();
     Q_INVOKABLE void nextPlayer();
-    Q_INVOKABLE void tryChangeModel(int rows, int columns);
+    Q_INVOKABLE void showSettingsDialog();
 
     bool abilityToMakeMoveInOnline() const;
 
@@ -87,12 +92,19 @@ private slots:
     void endGame();
     void sendPointToServer(int index);
     void onReadyRead();
+    void changeFieldModel();
 
 private:
 //    QQmlEngine m_engine;
 //    QQmlContext *m_pContext;
 //    QQmlComponent *m_pComponent;
     std::vector<Player> m_players;
+    QLineEdit *m_pLineEditHeight;
+    QLabel *m_pLabelHeight;
+    QLineEdit *m_pLineEditWidth;
+    QLabel *m_pLabelWidth;
+    QDialogButtonBox *m_okButton;
+    QDialog *m_settingsDialog;
     FieldModel *m_pModel;
     QTcpSocket *m_pSocket;
     QDataStream m_in;
