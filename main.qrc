@@ -1,11 +1,11 @@
 <RCC>
     <qresource prefix="/resources"/>
-    <qresource prefix="/">
-        <file>window.qml</file>
-        <file>Cell.qml</file>
-        <file>Menu.qml</file>
-        <file>PaintArea.qml</file>
-        <file>Session.qml</file>
-    </qresource>
     <qresource prefix="/savedgames"/>
+    <qresource prefix="/">
+        <file>qml/Cell.qml</file>
+        <file>qml/Menu.qml</file>
+        <file>qml/PaintArea.qml</file>
+        <file>qml/Session.qml</file>
+        <file>qml/window.qml</file>
+    </qresource>
 </RCC>

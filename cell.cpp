@@ -78,3 +78,16 @@ void Cell::setCounted(bool newCounted)
 {
     m_counted = newCounted;
 }
+
+//void Cell::resetCell()
+//{
+//    VERTEXCOLOR m_color;
+//    Coord m_coords;
+//    int m_occupiedByPlayer;
+//    int m_area;
+//    bool m_counted;
+//    bool m_clickable;
+
+//    m_color = VERTEXCOLOR::White;
+//    m_occupiedByPlayer
+//}

@@ -59,6 +59,7 @@ public:
     void setPlayer(int player);
     bool isCounted();
     void setCounted(bool newCounted);
+    void resetCell();
 
     std::vector<Cell*> m_neighbours;
 

@@ -31,6 +31,11 @@ public:
         READ areasCount
         CONSTANT)
 
+    Q_PROPERTY(
+        int onlineGame
+        READ onlineGame
+        CONSTANT)
+
 //    Q_PROPERTY(
 //        QVector<QPoint> coords
 //        READ getCoordsOfOccupiedArea
@@ -60,35 +65,45 @@ public:
     int areasCount();
     void setCurrentPlayer(int newCurrentPlayer);
     int currentPlayer() const;
-    QVector<QPoint> *getAreaForIncludeNewVertexes(int area);
+//    QVector<QPoint> *getAreaForIncludeNewVertexes(int area);
+    void resetModel(int newRowSize, int newColumnSize);
     Q_INVOKABLE void dfsStart(int index, int player);
     Q_INVOKABLE QVector<QPoint> getAreaForPaint(int area);
     Q_INVOKABLE int getAreaOwner(int area);
 //    Q_INVOKABLE void saveModel(QString &fileName);
-    void setNeighbours();
+    void setNeighbours(std::vector<Cell *>& cells, int rows, int columns);
     friend QDataStream& operator>>( QDataStream& d, FieldModel& model);
     friend QDataStream& operator<<( QDataStream& d, const FieldModel& model);
+
+    void setOnlineGame(bool newOnlineGame);
+
+    bool onlineGame() const;
 
 signals:
     Q_INVOKABLE void changePlayer();
     Q_INVOKABLE void sendCoordsOfOccupiedArea();
     Q_INVOKABLE void repaintAllAreas();
+    Q_INVOKABLE void repaintAll();
+    void sendPointToServer(int index);
     void addPoints(int player, int points);
     void gameOver();
 
 public slots:
     void getCoordsOfOccupiedArea();
+    void onDfsFinished();
 //    void addVertexesToCycle(int cycle);    
 
 private:
     std::vector<Cell *> m_cells;
+    VectorArea m_vectorAreas;
+    DfsThread *thr;
     size_t m_rows;
     size_t m_columns;
     size_t m_fieldSize;
-    VectorArea m_vectorAreas;
-    DfsThread *thr;
     int m_currentPlayer;
     int m_movesMade;
+    int m_currentOnlinePlayer;
+    bool m_onlineGame;
 
 };
 

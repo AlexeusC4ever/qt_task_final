@@ -14,7 +14,7 @@ void DfsThread::run()
 //    sleep(10);
 
     m_currentArea = m_pModel->areasCount() + 1;
-    qDebug() << m_currentArea;
+//    qDebug() << m_currentArea;
 
     dfs(m_pStartCell);
 
@@ -211,7 +211,7 @@ int DfsThread::childrenInsideAreaCount(std::vector<Coord> &area)
                 ++children;
                 insideCell->setCounted(true);
                 makeCellNonClickable(insideCell);
-                qDebug() << "COUNT";
+//                qDebug() << "COUNT";
             }
         }
         //do a traversing from different sides to count all
@@ -244,6 +244,7 @@ int DfsThread::childrenInsideAreaCount(std::vector<Coord> &area)
 
 void DfsThread::dfs(Cell *vertex)
 {
+//    qDebug() << "COORDS:" << vertex->getCoord().x << vertex->getCoord().y;
     if(isInterruptionRequested()) return;
     m_vertexesInCicle.emplace_back(vertex->getCoord());
 
@@ -254,6 +255,7 @@ void DfsThread::dfs(Cell *vertex)
 
     for(int i = 0; i < neighbours.size(); ++i)
     {
+//        qDebug() << "NEIGHBOURS:" << neighbours[i]->getCoord().x << neighbours[i]->getCoord().y;
         if(isInterruptionRequested()) return;
 
         if(neighbours[i]->player() != vertex->player() ||
@@ -265,9 +267,9 @@ void DfsThread::dfs(Cell *vertex)
         if(neighbours[i]->getColor() == Cell::VERTEXCOLOR::White)
         {
             //-------------------------------------------------------
-//            if(neighbours[i]->area() &&
-//                    neighbours[i]->player() == vertex->player())
-//                m_currentArea = neighbours[i]->area();
+            if(neighbours[i]->area() &&
+                    neighbours[i]->player() == vertex->player())
+                m_currentArea = neighbours[i]->area();
             //-------------------------------------------------------
 
             dfs(neighbours[i]);
