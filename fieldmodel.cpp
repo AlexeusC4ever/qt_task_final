@@ -119,9 +119,11 @@ void FieldModel::onDfsFinished()
 {
     if(!m_onlineGame)
         emit changePlayer();
-
     else
         emit repaintAll();
+
+    if(gameOverCheck())
+        emit gameOver();
 }
 
 bool FieldModel::onlineGame() const
@@ -296,7 +298,7 @@ int FieldModel::getAreaOwner(int area)
     return m_vectorAreas[area].second;
 }
 
-void FieldModel::setNeighbours(std::vector<Cell *>& cells, int rows, int columns)
+void FieldModel::setNeighbours(std::vector<Cell *>& cells, size_t rows, size_t columns)
 {
     for(int i = 0; i < rows; ++i)
     {
@@ -317,6 +319,17 @@ void FieldModel::setNeighbours(std::vector<Cell *>& cells, int rows, int columns
     }
 }
 
+bool FieldModel::gameOverCheck()
+{
+    for(auto& cell : m_cells)
+    {
+        if(cell->isClickable() && !cell->isCounted()
+                && cell->player() == -1 && cell->area() == 0)
+            return false;
+    }
+    return true;
+}
+
 void FieldModel::setCurrentPlayer(int newCurrentPlayer)
 {
     m_currentPlayer = newCurrentPlayer;
@@ -324,6 +337,7 @@ void FieldModel::setCurrentPlayer(int newCurrentPlayer)
 
 QDataStream& operator<<(QDataStream& d, const FieldModel& model)
 {
+    qDebug() << "ROWS:" << model.m_rows << "COLUMNS:" << model.m_columns << model.m_fieldSize;
     d << model.m_rows << model.m_columns << model.m_fieldSize;
     for(int i = 0; i < model.m_fieldSize; ++i)
     {
@@ -334,8 +348,12 @@ QDataStream& operator<<(QDataStream& d, const FieldModel& model)
         d << cell->area();
         d << cell->isCounted();
         d << cell->isClickable();
+//        qDebug() << i << "LOAD-----" << model.m_cells[i]->getColor() << model.m_cells[i]->getCoord().x <<
+//                    model.m_cells[i]->getCoord().y << model.m_cells[i]->player() << model.m_cells[i]->area() << model.m_cells[i]->isClickable();
     }
     d << model.m_vectorAreas.size();
+
+        qDebug() << "AREASSAVED:" << model.m_vectorAreas.size();
 
     for(int i = 0; i < model.m_vectorAreas.size(); i++)
     {
@@ -355,28 +373,29 @@ QDataStream& operator<<(QDataStream& d, const FieldModel& model)
 
 QDataStream& operator>>( QDataStream& d, FieldModel& model)
 {
-//    d >> model.m_rows >> model.m_columns >> model.m_fieldSize;
+    model.m_cells.resize(model.m_fieldSize);
 
-//    model.m_cells.resize(model.m_fieldSize);
+    qDebug() << "ROWS:" << model.m_rows << "COLUMNS:" << model.m_columns << model.m_fieldSize;
 
-    for(int i = 0; i < model.m_fieldSize; i++)
+    for(size_t i = 0; i < model.m_fieldSize; i++)
     {
         Cell::VERTEXCOLOR cellColor;
-        Coord cellCoord;
+        int x;
+        int y;
         int player;
         int area;
         bool isCounted;
         bool isClickable;
 
         d >> cellColor;
-        d >> cellCoord.x;
-        d >> cellCoord.y;
+        d >> x;
+        d >> y;
         d >> player;
         d >> area;
         d >> isCounted;
         d >> isClickable;
 
-        Cell *cell = new Cell(cellCoord);
+        Cell *cell = new Cell(Coord{x, y});
         cell->setColor(cellColor);
         cell->setPlayer(player);
         cell->setArea(area);
@@ -392,7 +411,7 @@ QDataStream& operator>>( QDataStream& d, FieldModel& model)
     model.setNeighbours(model.m_cells, model.m_rows, model.m_columns);
 
     d >> vectorAreasSize;
-//    qDebug() << "AREASLOADED:" << vectorAreasSize;
+    qDebug() << "AREASLOADED:" << vectorAreasSize;
 
     model.m_vectorAreas.resize(vectorAreasSize);
 

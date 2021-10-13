@@ -1,5 +1,4 @@
 import QtQuick 2.0
-import cellItem 1.0
 
 
 Rectangle
@@ -7,6 +6,7 @@ Rectangle
     id: cell
     property alias drawingcanvas: drawingCanvas
     property var color;
+//    property var point:
     Canvas{
         id: drawingCanvas
 

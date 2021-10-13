@@ -42,10 +42,10 @@ void Cell::setColor(VERTEXCOLOR color_)
 
 void Cell::setNeighbours(const std::vector<Cell *> &&neighbours_)
 {
-    for(auto& neigh: m_neighbours)
-    {
-        qDebug() << neigh->m_coords.x << neigh->m_coords.y;
-    }
+//    for(auto& neigh: m_neighbours)
+//    {
+//        qDebug() << neigh->m_coords.x << neigh->m_coords.y;
+//    }
     m_neighbours = std::move(neighbours_);
 }
 

@@ -36,7 +36,7 @@ Rectangle {
             id: saveButton
             anchors.top: menu.top
             width: menu.width
-            height: parent.height / 4 - 5
+            height: parent.height / 4 - 3
             MouseArea{
                 anchors.fill: parent
                 Text{

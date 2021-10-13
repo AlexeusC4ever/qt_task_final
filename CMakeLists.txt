@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14)
 
-project(final_9)
+project(final_10)
 
 
 include_directories (${PROJECT_SOURCE_DIR})
@@ -68,11 +68,11 @@ add_executable(
 target_link_libraries(gameserver PRIVATE server)
 
 
-add_executable(final_9
+add_executable(final_10
   ${PROJECT_SOURCES}
 #  ${UIC_WRAPPERS}
   ${MOC_WRAPPERS}
   ${QRC_WRAPPERS}
 )
 
-target_link_libraries(final_9 Qt6::Widgets Qt6::Network Qt6::Qml Qt6::Quick)
+target_link_libraries(final_10 Qt6::Widgets Qt6::Network Qt6::Qml Qt6::Quick)

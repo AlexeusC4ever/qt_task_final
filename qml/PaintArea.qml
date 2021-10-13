@@ -36,16 +36,20 @@ Rectangle {
             sessionModel.model.modelReset();
         }
 
-//        function onDataChanged(index)
-//        {
-//            sessionModel.model.index.drawPointRequest(sessionModel.model.index.cell.occupiedByPlayer);
-//        }
+        function onDataChanged(index, index, role)
+        {
+//            console.log("datachanged", index, gridview.model.data(index, role));
+//            gridview.model.setData(index, role);
+//            if(role == Display)
+//            var player = gridview.model.at(index).reset();
+        }
     }
 
     Connections{
         target: sessionModel
         function onModelChanged() {
-            sessionModel.modelReset();
+//            sessionModel.modelReset();
+            winnerrect.z = -10;
             sessionModel.model.modelReset();
             gridview.update();
             canvas.clear_canvas();
@@ -56,14 +60,32 @@ Rectangle {
         function onReadyToMove() {
             canvas.dfsWorking = false;
         }
+
+        function onSendWinner(winner, winnername)
+        {
+            wintext.winner = winnername;
+            wintext.color = sessionModel.playerColor(winner);
+            wintext.visible = true;
+            winnerrect.z = gridview.z + 20
+        }
     }
 
-//    Connections{
-//        target: itemdelegate
-//        function () {
-//            mousearea.drawPointRequest(cell.occupiedByPlayer);
-//        }
-//    }
+    Rectangle{
+        id: winnerrect
+        z: -10
+        anchors.fill: parent
+        visible: true
+        Text{
+            id: wintext
+            visible: true
+            anchors.centerIn: parent
+            fontSizeMode: Text.Fit;
+            minimumPixelSize: 10;
+            font.pixelSize: 20
+            property var winner
+            text: "Winner: " + winner
+        }
+    }
 
     id: root
     visible: true
@@ -101,6 +123,11 @@ Rectangle {
 
             delegate: Item{
                 id: itemdelegate
+
+//                function onDataChanged(){
+//                    drawPointRequest(cell.occupiedByPlayer);
+//                }
+
                 height: gridview.cellHeight
                 width: gridview.cellWidth
 
@@ -110,12 +137,11 @@ Rectangle {
                     property int index: model.index
                     property int occupiedByPlayer: model.edit
                     property int isClickable: model.display
-//                    drawingcanvas.z: canvas.z + 1
+                    drawingcanvas.z: canvas.z + 1000
                     MouseArea{
                         id: mousearea
                         anchors.fill: parent
                         onClicked: {
-//                            console.log("CLICKED");
                             if(cell.occupiedByPlayer != -1 || !cell.isClickable || canvas.dfsWorking ||
                                     (sessionModel.model.onlineGame && !sessionModel.onlineMoveFlag))
                                 return;
@@ -128,6 +154,7 @@ Rectangle {
                         function drawPointRequest(player)
                         {
 //                            cell.occupiedByPlayer = sessionmodel.player;
+
                             if(player !== -1)
                                 cell.drawingcanvas.drawPoint(sessionModel.playerColor(player));
                         }

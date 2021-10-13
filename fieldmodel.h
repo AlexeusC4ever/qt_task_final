@@ -22,9 +22,9 @@ public:
                         QObject *parent = 0);
     ~FieldModel();
 
-    enum{
-        clickRole = Qt::UserRole
-    };
+//    enum{
+//        clickRole = Qt::UserRole
+//    };
 
     Q_PROPERTY(
         int areasCount
@@ -68,17 +68,16 @@ public:
     int currentPlayer() const;
 //    QVector<QPoint> *getAreaForIncludeNewVertexes(int area);
     void resetModel(int newRowSize, int newColumnSize);
+    void setOnlineGame(bool newOnlineGame);
+    bool onlineGame() const;
+//    Q_INVOKABLE void saveModel(QString &fileName);
+    void setNeighbours(std::vector<Cell *>& cells, size_t rows, size_t columns);
+    friend QDataStream& operator>>( QDataStream& d, FieldModel& model);
+    friend QDataStream& operator<<( QDataStream& d, const FieldModel& model);
+    bool gameOverCheck();
     Q_INVOKABLE void dfsStart(int index, int player);
     Q_INVOKABLE QVector<QPoint> getAreaForPaint(int area);
     Q_INVOKABLE int getAreaOwner(int area);
-//    Q_INVOKABLE void saveModel(QString &fileName);
-    void setNeighbours(std::vector<Cell *>& cells, int rows, int columns);
-    friend QDataStream& operator>>( QDataStream& d, FieldModel& model);
-    friend QDataStream& operator<<( QDataStream& d, const FieldModel& model);
-
-    void setOnlineGame(bool newOnlineGame);
-
-    bool onlineGame() const;
 
 signals:
     Q_INVOKABLE void changePlayer();
@@ -98,9 +97,9 @@ private:
     std::vector<Cell *> m_cells;
     VectorArea m_vectorAreas;
     DfsThread *thr;
-    size_t m_rows;
-    size_t m_columns;
-    size_t m_fieldSize;
+    const size_t m_rows;
+    const size_t m_columns;
+    const size_t m_fieldSize;
     int m_currentPlayer;
     int m_movesMade;
     int m_currentOnlinePlayer;

@@ -204,7 +204,7 @@ void SessionModel::saveModel(QString &fileName)
 
     QFile fileForSave(fileName);
 
-    if (!fileForSave.open(QIODevice::WriteOnly | QIODevice::Text))
+    if (!fileForSave.open(QIODevice::WriteOnly))
     {
 //        qDebug() << "ERROR";
         return;
@@ -228,7 +228,7 @@ void SessionModel::loadModel(QString &fileName)
 
     QFile fileForLoad(fileName);
 
-    if (!fileForLoad.open(QIODevice::ReadOnly | QIODevice::Text))
+    if (!fileForLoad.open(QIODevice::ReadOnly))
     {
         qDebug() << "ERROR";
         return;
@@ -253,6 +253,8 @@ void SessionModel::loadModel(QString &fileName)
 
     newPlayers.resize(playersSize);
 
+    setPModel(newModel.release());
+
     for(size_t i = 0; i < playersSize; ++i)
     {
         data >> newPlayers[i].color;
@@ -262,12 +264,10 @@ void SessionModel::loadModel(QString &fileName)
     }
     fileForLoad.close();
 
-    setPModel(newModel.release());
     m_players = newPlayers;
 
-//    emit dataChanged();
-//    emit dataChanged(createIndex(0, 0), createIndex(m_players.size() - 1, 0), QVector<int> { Qt::DisplayRole,
-//                     Qt::EditRole, Qt::DecorationRole});
+    emit dataChanged(createIndex(0, 0), createIndex(m_players.size() - 1, 0), QVector<int> { Qt::DisplayRole,
+                     Qt::EditRole, Qt::DecorationRole});
 //    int cellsMount = m_pModel->rowCount();
 //    emit m_pModel->dataChanged(createIndex(0, 0), createIndex(cellsMount, 0), QVector<int> { Qt::DisplayRole,
 //                     Qt::EditRole});
@@ -295,6 +295,13 @@ void SessionModel::setPModel(FieldModel *newPModel)
     connect(m_pModel, SIGNAL(changePlayer()), this, SLOT(nextPlayer()));
 //    m_pModel->resetModel(defaultFieldDimension, defaultFieldDimension);
 
+    for(auto& player: m_players)
+    {
+        player.points = 0;
+    }
+
+    emit dataChanged(createIndex(0, 0), createIndex(m_players.size() - 1, 0), QVector<int> { Qt::DisplayRole,
+                     Qt::EditRole, Qt::DecorationRole});
     emit modelChanged();
 
 //    emit m_pModel->dataChanged(createIndex(0, 0), createIndex(m_pModel->rowCount(), 0), QVector<int> { Qt::DisplayRole,
@@ -331,7 +338,7 @@ void SessionModel::endGame()
                           return a.points < b.points;
                       }));
 
-   emit sendWinner();
+   emit sendWinner(winner, m_players[winner].name);
 
 //   delete m_pModel;
 

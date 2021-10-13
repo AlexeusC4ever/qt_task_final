@@ -81,7 +81,7 @@ public:
 
 signals:
     Q_INVOKABLE void addedPoints();
-    Q_INVOKABLE void sendWinner();
+    Q_INVOKABLE void sendWinner(int, QString);
 //    Q_INVOKABLE void saveGameRequest(QString &fileName);
 //    Q_INVOKABLE void loadGameRequest(QString &fileName);
     void modelChanged(/*FieldModel *newModel*/);
