@@ -15,6 +15,10 @@
 static constexpr int sendPlayerIdOperation = 1;
 static constexpr int sendPointOperation = 2;
 static constexpr int giveMoveOperation = 3;
+static constexpr int sendingPointToServer = 4;
+static constexpr int sendEndGameSignalToServer = 5;
+static constexpr int sendPlayerDisconnectedSignalToClient = 6;
+
 static constexpr size_t defaultFieldDimension {14};
 
 SessionModel::SessionModel(QObject *parent)
@@ -290,6 +294,14 @@ void SessionModel::setPModel(FieldModel *newPModel)
                                                                          Qt::DecorationRole});
 
     emit modelChanged();
+
+    if(m_pModel->onlineGame())
+    {
+        m_onlineGame = false;
+        m_pModel->setOnlineGame(false);
+        m_abilityToMakeMoveInOnline = false;
+        m_pSocket->disconnectFromHost();
+    }
 }
 
 int SessionModel::winner()
@@ -312,12 +324,24 @@ void SessionModel::endGame()
                           return a.points < b.points;
                       }));
 
+   if(m_pModel->onlineGame())
+   {
+       m_onlineGame = false;
+       m_pModel->setOnlineGame(false);
+       m_abilityToMakeMoveInOnline = false;
+       m_pSocket->disconnectFromHost();
+       m_in << sendEndGameSignalToServer;
+       m_pSocket->flush();
+       emit readyToMove();
+       qDebug() << "ENDENDEND";
+   }
+
    emit sendWinner(winner, m_players[winner].name);
 }
 
 void SessionModel::sendPointToServer(int index)
 {
-    m_in << index;
+    m_in << sendingPointToServer << index;
     m_pSocket->flush();
     m_abilityToMakeMoveInOnline = false;
 }
@@ -354,9 +378,19 @@ void SessionModel::onReadyRead()
 //                qDebug() << "giveMoveOperation";
                 emit readyToMove();
             break;
+            case(sendPlayerDisconnectedSignalToClient):
+                qDebug() << "PLAYERDISCONNECTED";
+                m_onlineGame = false;
+                m_pModel->setOnlineGame(false);
+                m_abilityToMakeMoveInOnline = false;
+                emit readyToMove();
+//                m_pSocket->disconnectFromHost();
+                QMessageBox::information(m_settingsDialog, tr("Online Game Stopped"), tr("Not enough players"));
+            break;
         }
     }
     if (!m_out.commitTransaction()){
+        QMessageBox::warning(m_settingsDialog, tr("Network Error"), tr("Transaction Error"));
 //        qDebug() << "!commitTransaction" << operation;
         return;
     }

@@ -23,6 +23,7 @@ public:
 
 public slots:
   void sendPoints();
+  void playerDisconnected();
 
 private slots:
   //
@@ -38,6 +39,7 @@ private:
   int m_playersMount;
   int m_currentPLyer;
   int m_pointIndex;
+  int m_gameEndedCheck;
 };    // class ServerDialog
 
 #endif    // SERVER_DLG_H__
