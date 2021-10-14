@@ -9,11 +9,10 @@ Rectangle
 //    property var point:
     Canvas{
         id: drawingCanvas
-
         anchors.fill: parent
         onPaint: {
             if(!color) return;
-            var ctx = getContext("2d")
+            var ctx = getContext("2d");
             var radius = cell.height * 0.1;
             context.beginPath();
             context.arc(cell.width / 2, cell.height / 2, radius, 0, 2 * Math.PI, false);
@@ -21,7 +20,7 @@ Rectangle
             context.fillStyle = color;
 
             context.fill();
-            context.stroke();
+//            context.stroke();
             requestPaint();
         }
 

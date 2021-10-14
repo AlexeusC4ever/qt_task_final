@@ -14,7 +14,6 @@ ServerDialog::ServerDialog():
     m_playersCount(0),
     m_currentPLyer(0)
 {
-//   qDebug() << "HHHHHHHHHHHHHHEere";
     m_players.reserve(m_playersMount);
 
     setupUi(this);
@@ -39,7 +38,6 @@ void ServerDialog::giveMove(int clientId)
 {
        qDebug() << "HgiveMove";
     QDataStream inout(m_players[clientId - 1]);
-//    inout.startTransaction();
     inout << giveMoveOperation;
     m_players[clientId - 1]->flush();
 }
@@ -48,7 +46,6 @@ void ServerDialog::sendPlayerId(int clientId)
 {
        qDebug() << "sendPlayerId";
     QDataStream inout(m_players[clientId - 1]);
-//    inout.startTransaction();
     inout << sendPlayerIdOperation << clientId - 1;
     m_players[clientId - 1]->flush();
 }
@@ -65,9 +62,7 @@ void ServerDialog::sendPoints()
             m_players[m_currentPLyer]->flush();
         }
     }
-//    QDataStream inout(m_players[player]);
-//    inout << sendPointOperation << index << player;
-//    m_players[player]->flush();
+
     if(m_currentPLyer == m_playersMount - 1)
         m_currentPLyer = 0;
     else
@@ -139,7 +134,7 @@ void ServerDialog::on_readyRead()
 
 ////    inout << strChat;
 
-//    m_pTextEditChat->setPlainText(strChat);
+    m_pTextEditChat->setPlainText(QString::number(m_pointIndex));
 
 //    for(int i = 0; i < m_playersMount; ++i)
 //        if(m_clients[i] == pClientSocket)

@@ -6,7 +6,6 @@ Cell::Cell(Coord coor, QObject *parent) :
     m_occupiedByPlayer(-1),
     m_coords(coor),
     m_color(VERTEXCOLOR::White),
-//    isVisited(false)
     m_clickable(true),
     m_counted(false),
     m_area(0)
@@ -42,10 +41,6 @@ void Cell::setColor(VERTEXCOLOR color_)
 
 void Cell::setNeighbours(const std::vector<Cell *> &&neighbours_)
 {
-//    for(auto& neigh: m_neighbours)
-//    {
-//        qDebug() << neigh->m_coords.x << neigh->m_coords.y;
-//    }
     m_neighbours = std::move(neighbours_);
 }
 
@@ -78,16 +73,3 @@ void Cell::setCounted(bool newCounted)
 {
     m_counted = newCounted;
 }
-
-//void Cell::resetCell()
-//{
-//    VERTEXCOLOR m_color;
-//    Coord m_coords;
-//    int m_occupiedByPlayer;
-//    int m_area;
-//    bool m_counted;
-//    bool m_clickable;
-
-//    m_color = VERTEXCOLOR::White;
-//    m_occupiedByPlayer
-//}

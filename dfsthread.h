@@ -3,7 +3,6 @@
 
 #include "fieldmodel.h"
 #include <QThread>
-//#include <vector>
 
 struct Coord;
 class Cell;

@@ -9,8 +9,6 @@
 #include <QQmlContext>
 #include <QQmlComponent>
 
-//class QTcpSocket;
-
 class QLabel;
 class QLineEdit;
 class QDialog;
@@ -27,7 +25,7 @@ class SessionModel : public QAbstractListModel
     Q_OBJECT
 
 public:
-    explicit SessionModel(QQmlApplicationEngine *engine, QObject *parent = nullptr);
+    explicit SessionModel(QObject *parent = nullptr);
     ~SessionModel();
 
     Q_PROPERTY(

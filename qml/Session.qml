@@ -4,14 +4,11 @@ import QtQuick.Controls 2.12
 
 Rectangle {
     id: root
-//    property var modelForTable
-//    property var fieldmodel
 
     ListView{
         id: listview
         height: 0.6 * parent.height
         width: parent.width
-//        anchors.fill: parent
         x: 10
         y: 10
         model: sessionModel
@@ -22,8 +19,8 @@ Rectangle {
                 text: model.display + ":  " + model.edit
             }
         }
-
     }
+
     Rectangle{
         id: menu
         width: parent.width
@@ -41,7 +38,7 @@ Rectangle {
                 anchors.fill: parent
                 Text{
                     anchors.centerIn: parent
-                    text: "СОХРАНИТЬ ИГРУ"
+                    text: qsTr("СОХРАНИТЬ ИГРУ")
                 }
                 onClicked:{
                     console.log("SAVE");
@@ -58,7 +55,7 @@ Rectangle {
                 anchors.fill: parent
                 Text{
                     anchors.centerIn: parent
-                    text: "ЗАГРУЗИТЬ ИГРУ"
+                    text: qsTr("ЗАГРУЗИТЬ ИГРУ")
                 }
                 onClicked:{
                     console.log("LOAD");
@@ -75,7 +72,7 @@ Rectangle {
                 anchors.fill: parent
                 Text{
                     anchors.centerIn: parent
-                    text: "ИГРАТЬ ПО СЕТИ"
+                    text: qsTr("ИГРАТЬ ПО СЕТИ")
                 }
                 onClicked:{
                     console.log("NET");
@@ -92,7 +89,7 @@ Rectangle {
                 anchors.fill: parent
                 Text{
                     anchors.centerIn: parent
-                    text: "НАСТРОЙКИ"
+                    text: qsTr("НАСТРОЙКИ")
                 }
                 onClicked:{
                     console.log("NET");

@@ -3,7 +3,6 @@
     <qresource prefix="/savedgames"/>
     <qresource prefix="/">
         <file>qml/Cell.qml</file>
-        <file>qml/Menu.qml</file>
         <file>qml/PaintArea.qml</file>
         <file>qml/Session.qml</file>
         <file>qml/window.qml</file>

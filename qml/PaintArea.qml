@@ -1,30 +1,12 @@
 import QtQuick 2.0
-//import fieldModel 1.0
 import QtQuick.Layouts 1.13
 
 Rectangle {
-//    property var sessionModel
-//    property var modelForField/*: sessionModel.model*/
     property alias canvas: canvas
-
-
-//    signal update()
-//    onUpdate:{
-//        console.log("ONUPDATE");
-////        gridview.model.reset();
-////        gridview.modelUpdated();
-//    }
-
-
     Connections{
         target: gridview.model
         function onChangePlayer() {
-//            console.log("Player:", sessionModel.player);
-//            sessionModel.nextPlayer();
-//            console.log("Player:", sessionModel.player);
             paintarea.canvas.dfsWorking = false;
-//            console.log("CONNECTED");
-//            sessionModel.tryChangeModel(15, 15);
         }
 
         function onRepaintAllAreas() {
@@ -35,20 +17,11 @@ Rectangle {
         function onRepaintAll() {
             sessionModel.model.modelReset();
         }
-
-        function onDataChanged(index, index, role)
-        {
-//            console.log("datachanged", index, gridview.model.data(index, role));
-//            gridview.model.setData(index, role);
-//            if(role == Display)
-//            var player = gridview.model.at(index).reset();
-        }
     }
 
     Connections{
         target: sessionModel
         function onModelChanged() {
-//            sessionModel.modelReset();
             winnerrect.z = -10;
             sessionModel.model.modelReset();
             gridview.update();
@@ -102,11 +75,8 @@ Rectangle {
             else if(act == 1){
                 clear_canvas();
                 drawLines();
-                var areaNumber = sessionModel.model.areasCount;
                 repaintAreas();
                 act = 0;
-//                if(dfsWorking)
-//                sessionModel.model.changePlayer();
             }
         }
 
@@ -123,11 +93,6 @@ Rectangle {
 
             delegate: Item{
                 id: itemdelegate
-
-//                function onDataChanged(){
-//                    drawPointRequest(cell.occupiedByPlayer);
-//                }
-
                 height: gridview.cellHeight
                 width: gridview.cellWidth
 
@@ -137,7 +102,8 @@ Rectangle {
                     property int index: model.index
                     property int occupiedByPlayer: model.edit
                     property int isClickable: model.display
-                    drawingcanvas.z: canvas.z + 1000
+                    color: sessionModel.playerColor(occupiedByPlayer);
+
                     MouseArea{
                         id: mousearea
                         anchors.fill: parent
@@ -153,16 +119,10 @@ Rectangle {
 
                         function drawPointRequest(player)
                         {
-//                            cell.occupiedByPlayer = sessionmodel.player;
-
                             if(player !== -1)
                                 cell.drawingcanvas.drawPoint(sessionModel.playerColor(player));
                         }
-
                     }
-                }
-                Component.onCompleted: {
-                    mousearea.drawPointRequest(cell.occupiedByPlayer);
                 }
             }
         }
@@ -171,8 +131,8 @@ Rectangle {
         {
             for(var i = 0; i < gridview.model.areasCount; ++i)
             {
-                var coordsOfArea =  gridview.model.getAreaForPaint(i);
-                var areaOwner =  gridview.model.getAreaOwner(i);
+                var coordsOfArea = gridview.model.getAreaForPaint(i);
+                var areaOwner = gridview.model.getAreaOwner(i);
                 if(areaOwner === -1) return;
                 drawOccupiedArea(coordsOfArea, areaOwner);
             }
@@ -199,7 +159,7 @@ Rectangle {
 
             ctx.strokeStyle = color;
             ctx.fillStyle =  areaColor;
-//            console.log("DRAW", color, areaColor);
+
             ctx.beginPath();
 
             ctx.moveTo((arrayOfCoords[0].y + 1) * width - 0.5 * width,

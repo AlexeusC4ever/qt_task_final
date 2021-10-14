@@ -155,11 +155,11 @@ bool DfsThread::isValidCycle()
         return false;
     }
 
-        if(m_mountOfPointsInArea < m_finalMountOfPointsInArea)
-            return false;
-        else if(m_mountOfPointsInArea == m_finalMountOfPointsInArea)
-        if(m_lengthOfCicle < m_finalLengthOfCicle)
-            return false;
+//        if(m_mountOfPointsInArea < m_finalMountOfPointsInArea)
+//            return false;
+//        else if(m_mountOfPointsInArea == m_finalMountOfPointsInArea)
+            if(m_lengthOfCicle < m_finalLengthOfCicle)
+                return false;
 
         return true;
 }
@@ -244,7 +244,6 @@ int DfsThread::childrenInsideAreaCount(std::vector<Coord> &area)
 
 void DfsThread::dfs(Cell *vertex)
 {
-//    qDebug() << "COORDS:" << vertex->getCoord().x << vertex->getCoord().y;
     if(isInterruptionRequested()) return;
     m_vertexesInCicle.emplace_back(vertex->getCoord());
 
@@ -255,30 +254,24 @@ void DfsThread::dfs(Cell *vertex)
 
     for(int i = 0; i < neighbours.size(); ++i)
     {
-//        qDebug() << "NEIGHBOURS:" << neighbours[i]->getCoord().x << neighbours[i]->getCoord().y;
         if(isInterruptionRequested()) return;
 
         if(neighbours[i]->player() != vertex->player() ||
                 neighbours[i]->getCoord() == m_vertexesInCicle[m_vertexesInCicle.size() - 2])
-        {
             continue;
-        }
 
         if(neighbours[i]->getColor() == Cell::VERTEXCOLOR::White)
         {
-            //-------------------------------------------------------
             if(neighbours[i]->area() &&
                     neighbours[i]->player() == vertex->player())
                 m_currentArea = neighbours[i]->area();
-            //-------------------------------------------------------
 
             dfs(neighbours[i]);
 
         }
 
-        /**/else if(neighbours[i]->getColor() == Cell::VERTEXCOLOR::Grey)
+        else if(neighbours[i]->getColor() == Cell::VERTEXCOLOR::Grey)
         {
-
             m_vertexesInCicle.emplace_back(neighbours[i]->getCoord());
             m_lengthOfCicle = lengthOfCycleCount();
             if(isValidCycle())
@@ -287,7 +280,6 @@ void DfsThread::dfs(Cell *vertex)
                 m_finalVertexesInCicle = m_vertexesInCicle;
                 m_finalMountOfPointsInArea = m_mountOfPointsInArea;
 
-//                if(m_vertexesInCicle.size() - 1 - m_lengthOfCicle > 0)
                 m_finalVertexesInCicle = std::move(
                             deleteExtraVertexes(m_finalVertexesInCicle, m_finalLengthOfCicle));
                 m_pointsToAdd = childrenInsideAreaCount(m_finalVertexesInCicle);
@@ -300,9 +292,9 @@ void DfsThread::dfs(Cell *vertex)
             m_vertexesInCicle.pop_back();
         }
     }
-    m_vertexesInCicle.pop_back();
 
-        vertex->setColor(Cell::VERTEXCOLOR::White/*Black*/);
+    m_vertexesInCicle.pop_back();
+    vertex->setColor(Cell::VERTEXCOLOR::White);
 
 }
 
@@ -324,3 +316,6 @@ void DfsThread::dfsStart(int index)
 }
 
 
+
+
+//        vertex->setColor(Cell::VERTEXCOLOR::White/*Black*/);

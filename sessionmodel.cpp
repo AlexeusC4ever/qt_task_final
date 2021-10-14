@@ -17,7 +17,7 @@ static constexpr int sendPointOperation = 2;
 static constexpr int giveMoveOperation = 3;
 static constexpr size_t defaultFieldDimension {14};
 
-SessionModel::SessionModel(QQmlApplicationEngine *engine, QObject *parent)
+SessionModel::SessionModel(QObject *parent)
     : QAbstractListModel(parent),
       m_pModel(/*nullptr*/new FieldModel),
       m_pSocket(nullptr),
@@ -26,21 +26,13 @@ SessionModel::SessionModel(QQmlApplicationEngine *engine, QObject *parent)
 {
     m_players.emplace_back(Player{"Player1", "red", 0});
     m_players.emplace_back(Player{"Player2", "blue", 0});
-//    m_players.emplace_back(Player{"Player3", "green", 0});
-//    connect(this, SIGNAL(saveGameRequest(QString&)), this, SLOT(saveModel(QString&)));
-//    connect(this, SIGNAL(loadGameRequest(QString&)), this, SLOT(loadModel(QString&)));
+
     connect(m_pModel, SIGNAL(addPoints(int,int)), this, SLOT(addPoints(int,int)));
     connect(m_pModel, SIGNAL(gameOver()), this, SLOT(endGame()));
     connect(m_pModel, SIGNAL(changePlayer()), this, SLOT(nextPlayer()));
-//    m_pContext = new QQmlContext(engine->rootContext());
-//    m_pComponent = new QQmlComponent(this);
 
-//    m_pContext->setContextProperty("fieldModel", m_pModel);
 
-//    qDebug() << "CREATED";
 
-//    m_pComponent->setData();
-//    connectRequest();
     m_settingsDialog = new QDialog;
     m_okButton = new QDialogButtonBox(QDialogButtonBox::Ok);
     QHBoxLayout *widthLayout = new QHBoxLayout;
@@ -84,10 +76,9 @@ int SessionModel::rowCount(const QModelIndex &parent) const
 
 QVariant SessionModel::data(const QModelIndex &index, int role) const
 {
-    if (!index.isValid()/* || (role != Qt::EditRole && role != Qt::DisplayRole)*/)
+    if (!index.isValid())
         return QVariant();
 
-    // FIXME: Implement me!
     if(role == Qt::DisplayRole)
         return QVariant(m_players[index.row()].name);
     else if(role == Qt::EditRole)
@@ -113,7 +104,15 @@ int SessionModel::player()
 
 QColor SessionModel::playerColor(int player)
 {
-    return m_players[player].color;
+    QColor playerColor;
+    if(player == -1)
+    {
+        playerColor = qRgba(255, 255, 255, 0);
+    }
+    else{
+        playerColor = m_players[player].color;
+    }
+    return playerColor;
 }
 
 QColor SessionModel::playerColorForArea(int player)
@@ -160,7 +159,7 @@ void SessionModel::connectRequest()
         if (m_pSocket->error() != QAbstractSocket::UnknownSocketError)
         {
         //          err << "Error: " << socket.errorString() << Qt::endl;
-            QMessageBox::warning(nullptr, tr("ERROR"), tr("Network Error"));
+            out << tr("ERROR") << tr("Network Error");
             return;
         }
       //
@@ -175,26 +174,9 @@ void SessionModel::connectRequest()
 
     m_pModel->setOnlineGame(true);
 
-//    FieldModel *newModel = new FieldModel(15, 15);
-//    setPModel(newModel);
-
-//    m_pModel->resetModel(defaultFieldDimension, defaultFieldDimension);
-
-//    emit modelChanged(m_pModel);
-
-//    emit m_pModel->dataChanged(createIndex(0, 0), createIndex(m_pModel->rowCount(), 0), QVector<int> { Qt::DisplayRole,
-//                     Qt::EditRole});
     connect(m_pModel, SIGNAL(sendPointToServer(int)), this, SLOT(sendPointToServer(int)));
     connect(m_pSocket, &QIODevice::readyRead,
         this, &SessionModel::onReadyRead);
-
-//    m_inout.startTransaction();
-//    connect(
-//      m_pSocket, &QIODevice::readyRead,
-//      this, &ClientDialog::on_readyRead);
-
-//    m_pModel->setOnlineGame(true);
-
 
 }
 
@@ -206,7 +188,7 @@ void SessionModel::saveModel(QString &fileName)
 
     if (!fileForSave.open(QIODevice::WriteOnly))
     {
-//        qDebug() << "ERROR";
+        qDebug() << "ERROR" << "Save Error";
         return;
     }
 
@@ -223,14 +205,14 @@ void SessionModel::saveModel(QString &fileName)
 }
 
 void SessionModel::loadModel(QString &fileName)
-{   /*"qrc:/window.qml"*/
+{
     fileName = "savedgames/" + fileName + ".txt";
 
     QFile fileForLoad(fileName);
 
     if (!fileForLoad.open(QIODevice::ReadOnly))
     {
-        qDebug() << "ERROR";
+        qDebug() << "LOADERROR";
         return;
     }
 
@@ -268,9 +250,6 @@ void SessionModel::loadModel(QString &fileName)
 
     emit dataChanged(createIndex(0, 0), createIndex(m_players.size() - 1, 0), QVector<int> { Qt::DisplayRole,
                      Qt::EditRole, Qt::DecorationRole});
-//    int cellsMount = m_pModel->rowCount();
-//    emit m_pModel->dataChanged(createIndex(0, 0), createIndex(cellsMount, 0), QVector<int> { Qt::DisplayRole,
-//                     Qt::EditRole});
 
     emit modelChanged();
 }
@@ -289,23 +268,19 @@ void SessionModel::setPModel(FieldModel *newPModel)
 
     connect(m_pModel, SIGNAL(addPoints(int,int)), this, SLOT(addPoints(int,int)));
     connect(m_pModel, SIGNAL(gameOver()), this, SLOT(endGame()));
-
-//    m_pContext->setContextProperty("FieldModel", m_pModel);
-
     connect(m_pModel, SIGNAL(changePlayer()), this, SLOT(nextPlayer()));
-//    m_pModel->resetModel(defaultFieldDimension, defaultFieldDimension);
 
     for(auto& player: m_players)
     {
         player.points = 0;
     }
 
-    emit dataChanged(createIndex(0, 0), createIndex(m_players.size() - 1, 0), QVector<int> { Qt::DisplayRole,
-                     Qt::EditRole, Qt::DecorationRole});
-    emit modelChanged();
+    emit dataChanged(createIndex(0, 0), createIndex(m_players.size() - 1, 0), QVector<int> {
+                                                                         Qt::DisplayRole,
+                                                                         Qt::EditRole,
+                                                                         Qt::DecorationRole});
 
-//    emit m_pModel->dataChanged(createIndex(0, 0), createIndex(m_pModel->rowCount(), 0), QVector<int> { Qt::DisplayRole,
-//                     Qt::EditRole});
+    emit modelChanged();
 }
 
 int SessionModel::winner()
@@ -315,20 +290,10 @@ int SessionModel::winner()
 
 void SessionModel::addPoints(int player, int points)
 {
-//    qDebug() << player << points;
-//    if(m_pModel->onlineGame()){
-//        m_players[m_currentOnlinePlayer].points += points;
-//        emit dataChanged(createIndex(m_currentOnlinePlayer, 0),
-//                         createIndex(m_currentOnlinePlayer, 0),
-//                         QVector<int>{Qt::EditRole});
-//    }
-
-//    else{
         m_players[player].points += points;
         emit dataChanged(createIndex(player, 0),
                          createIndex(player, 0),
                          QVector<int>{Qt::EditRole});
-//    }
 }
 
 void SessionModel::endGame()
@@ -339,9 +304,6 @@ void SessionModel::endGame()
                       }));
 
    emit sendWinner(winner, m_players[winner].name);
-
-//   delete m_pModel;
-
 }
 
 void SessionModel::sendPointToServer(int index)
@@ -356,9 +318,6 @@ void SessionModel::sendPointToServer(int index)
 void SessionModel::onReadyRead()
 {
     qDebug() << "CLIENTREADYREAD";
-
-//    std::mutex a;
-//    std::lock_guard<std::mutex> mute(a);
 
     int operation = 0;
     int player = 0;
@@ -399,7 +358,6 @@ void SessionModel::onReadyRead()
         qDebug() << "!commitTransaction" << operation;
         return;
     }
-//    emit m_pSocket->readyRead();
 
 }
 
