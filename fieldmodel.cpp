@@ -244,7 +244,9 @@ void FieldModel::setCurrentPlayer(int newCurrentPlayer)
 
 QDataStream& operator<<(QDataStream& d, const FieldModel& model)
 {
-    qDebug() << "ROWS:" << model.m_rows << "COLUMNS:" << model.m_columns << model.m_fieldSize;
+//    qDebug() << "ROWS:" << model.m_rows <<
+//                "COLUMNS:" << model.m_columns <<
+//                model.m_fieldSize;
     d << model.m_rows << model.m_columns << model.m_fieldSize;
     for(int i = 0; i < model.m_fieldSize; ++i)
     {
@@ -255,12 +257,16 @@ QDataStream& operator<<(QDataStream& d, const FieldModel& model)
         d << cell->area();
         d << cell->isCounted();
         d << cell->isClickable();
-//        qDebug() << i << "LOAD-----" << model.m_cells[i]->getColor() << model.m_cells[i]->getCoord().x <<
-//                    model.m_cells[i]->getCoord().y << model.m_cells[i]->player() << model.m_cells[i]->area() << model.m_cells[i]->isClickable();
+//        qDebug() << i << "LOAD-----" << model.m_cells[i]->getColor()
+//                 << model.m_cells[i]->getCoord().x <<
+//                    model.m_cells[i]->getCoord().y <<
+//                    model.m_cells[i]->player() <<
+//                    model.m_cells[i]->area() <<
+//                    model.m_cells[i]->isClickable();
     }
     d << model.m_vectorAreas.size();
 
-        qDebug() << "AREASSAVED:" << model.m_vectorAreas.size();
+//    qDebug() << "AREASSAVED:" << model.m_vectorAreas.size();
 
     for(int i = 0; i < model.m_vectorAreas.size(); i++)
     {
@@ -280,40 +286,48 @@ QDataStream& operator<<(QDataStream& d, const FieldModel& model)
 
 QDataStream& operator>>( QDataStream& d, FieldModel& model)
 {
-//    d >> model.m_rows >> model.m_columns >> model.m_fieldSize;
-
-//    model.m_cells.resize(model.m_fieldSize);
-
     std::vector<Cell *> newVectorCell;
 
     newVectorCell.resize(model.m_fieldSize);
 
-    for(int i = 0; i < model.m_fieldSize; i++)
-    {
-        Cell::VERTEXCOLOR cellColor;
-        Coord cellCoord;
-        int player;
-        int area;
-        bool isCounted;
-        bool isClickable;
+    try{
+        for(int i = 0; i < model.m_fieldSize; i++)
+        {
+            Cell::VERTEXCOLOR cellColor;
+            Coord cellCoord;
+            int player;
+            int area;
+            bool isCounted;
+            bool isClickable;
 
-        d >> cellColor;
-        d >> cellCoord.x;
-        d >> cellCoord.y;
-        d >> player;
-        d >> area;
-        d >> isCounted;
-        d >> isClickable;
+            d >> cellColor;
+            d >> cellCoord.x;
+            d >> cellCoord.y;
+            d >> player;
+            d >> area;
+            d >> isCounted;
+            d >> isClickable;
 
-        Cell *cell = new Cell(cellCoord);
-        cell->setColor(cellColor);
-        cell->setPlayer(player);
-        cell->setArea(area);
-        cell->setCounted(isCounted);
-        cell->setClickable(isClickable);
-        newVectorCell[i] = cell;
-//        qDebug() << i << "LOAD-----" << model.m_cells[i]->getColor() << model.m_cells[i]->getCoord().x <<
-//                    model.m_cells[i]->getCoord().y << model.m_cells[i]->player() << model.m_cells[i]->area() << model.m_cells[i]->isClickable();
+            Cell *cell = new Cell(cellCoord);
+            cell->setColor(cellColor);
+            cell->setPlayer(player);
+            cell->setArea(area);
+            cell->setCounted(isCounted);
+            cell->setClickable(isClickable);
+            newVectorCell[i] = cell;
+    //        qDebug() << i << "LOAD-----" << model.m_cells[i]->getColor() <<
+    //                    model.m_cells[i]->getCoord().x <<
+    //                    model.m_cells[i]->getCoord().y <<
+    //                    model.m_cells[i]->player() <<
+    //                    model.m_cells[i]->area() <<
+    //                    model.m_cells[i]->isClickable();
+        }
+
+    } catch(...){
+        for(int i = 0; i < newVectorCell.size(); i++)
+            if(newVectorCell[i])
+                delete newVectorCell[i];
+        throw;
     }
 
     for(auto &cell: model.m_cells)
@@ -346,11 +360,6 @@ QDataStream& operator>>( QDataStream& d, FieldModel& model)
     emit model.repaintAllAreas();
 
     d >> model.m_currentPlayer;
-
-//    int tryda = 0;
-//    QColor color;
-//    d >> tryda;
-//    d >> color;
 
     return d;
 }

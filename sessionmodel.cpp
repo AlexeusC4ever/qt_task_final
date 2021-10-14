@@ -26,6 +26,7 @@ SessionModel::SessionModel(QObject *parent)
 {
     m_players.emplace_back(Player{"Player1", "red", 0});
     m_players.emplace_back(Player{"Player2", "blue", 0});
+//    m_players.emplace_back(Player{"Player2", "green", 0});
 
     connect(m_pModel, SIGNAL(addPoints(int,int)), this, SLOT(addPoints(int,int)));
     connect(m_pModel, SIGNAL(gameOver()), this, SLOT(endGame()));
@@ -142,41 +143,32 @@ void SessionModel::showSettingsDialog()
 
 void SessionModel::connectRequest()
 {
-    qDebug() << "CONNECT";
-
-    QTextStream out(stdout), err(stderr);
-
     if(m_pSocket)
         delete m_pSocket;
 
     m_pSocket = new QTcpSocket;
+std::unique_ptr<FieldModel> model(new FieldModel(defaultFieldDimension, defaultFieldDimension));
 
-    m_in.setDevice(m_pSocket);///////////////
+    m_in.setDevice(m_pSocket);
     m_out.setDevice(m_pSocket);
     m_pSocket->connectToHost(QHostAddress::LocalHost, 45569);
-    out << "Connecting to the server..." << Qt::endl;
     while (!m_pSocket->waitForConnected(5000))
         if (m_pSocket->error() != QAbstractSocket::UnknownSocketError)
         {
         //          err << "Error: " << socket.errorString() << Qt::endl;
-            out << tr("ERROR") << tr("Network Error");
+            QMessageBox::warning(m_settingsDialog, tr("Error"), tr("Network Error"));
             return;
         }
-      //
-    out << "Connected to " << m_pSocket->peerAddress().toString() <<
-        ':' << m_pSocket->peerPort() <<
-        "\nLocal: " << m_pSocket->localAddress().toString() <<
-        ':' << m_pSocket->localPort() << Qt::endl;
 
-
-    FieldModel *model = new FieldModel(defaultFieldDimension, defaultFieldDimension);
-    setPModel(model);
+    setPModel(model.release());
 
     m_pModel->setOnlineGame(true);
 
     connect(m_pModel, SIGNAL(sendPointToServer(int)), this, SLOT(sendPointToServer(int)));
     connect(m_pSocket, &QIODevice::readyRead,
         this, &SessionModel::onReadyRead);
+
+    QMessageBox::information(m_settingsDialog, tr("OnlineGame"), tr("Server was found"));
 
 }
 
@@ -188,19 +180,28 @@ void SessionModel::saveModel(QString &fileName)
 
     if (!fileForSave.open(QIODevice::WriteOnly))
     {
+        QMessageBox::warning(m_settingsDialog, tr("Error"), tr("Save Error"));
         qDebug() << "ERROR" << "Save Error";
         return;
     }
 
-    QDataStream data(&fileForSave);
-    data << *m_pModel;
-    data << m_players.size();
-    for(int i = 0; i < m_players.size(); ++i)
+    try{
+        QDataStream data(&fileForSave);
+        data << *m_pModel;
+        data << m_players.size();
+        for(int i = 0; i < m_players.size(); ++i)
+        {
+            data << m_players[i].color;
+            data << m_players[i].name;
+            data << m_players[i].points;
+        }
+
+    } catch(...)
     {
-        data << m_players[i].color;
-        data << m_players[i].name;
-        data << m_players[i].points;
+        QMessageBox::warning(m_settingsDialog, tr("Error"), tr("Save Error"));
+        fileForSave.remove();
     }
+
     fileForSave.close();
 }
 
@@ -212,44 +213,52 @@ void SessionModel::loadModel(QString &fileName)
 
     if (!fileForLoad.open(QIODevice::ReadOnly))
     {
+        QMessageBox::warning(m_settingsDialog, tr("Error"), tr("Load Error"));
         qDebug() << "LOADERROR";
         return;
     }
 
-    QDataStream data(&fileForLoad);
+    try{
+        QDataStream data(&fileForLoad);
 
-    size_t rows = 0;
-    size_t columns = 0;
-    size_t fieldSize = 0;
+        size_t rows = 0;
+        size_t columns = 0;
+        size_t fieldSize = 0;
 
-    data >> rows >> columns >> fieldSize;
+        data >> rows >> columns >> fieldSize;
 
-    std::unique_ptr<FieldModel> newModel(new FieldModel(rows, columns));
-    std::vector<Player> newPlayers;
+        std::unique_ptr<FieldModel> newModel(new FieldModel(rows, columns));
+        std::vector<Player> newPlayers;
 
-    data >> *newModel;
+        data >> *newModel;
 
-    size_t playersSize = 0;
-    data >> playersSize;
-    qDebug() << "PLAYERS:" << playersSize;
+        size_t playersSize = 0;
+        data >> playersSize;
+        qDebug() << "PLAYERS:" << playersSize;
 
-    newPlayers.resize(playersSize);
+        newPlayers.resize(playersSize);
 
-    setPModel(newModel.release());
+        for(size_t i = 0; i < playersSize; ++i)
+        {
+            data >> newPlayers[i].color;
+            data >> newPlayers[i].name;
+            data >> newPlayers[i].points;
+            qDebug() << newPlayers[i].color << m_players[i].name << m_players[i].points;
+        }
+        setPModel(newModel.release());
+        m_players = newPlayers;
 
-    for(size_t i = 0; i < playersSize; ++i)
+    } catch(...)
     {
-        data >> newPlayers[i].color;
-        data >> newPlayers[i].name;
-        data >> newPlayers[i].points;
-        qDebug() << newPlayers[i].color << m_players[i].name << m_players[i].points;
+        QMessageBox::warning(m_settingsDialog, tr("Error"), tr("Load Error"));
     }
+
     fileForLoad.close();
 
-    m_players = newPlayers;
-
-    emit dataChanged(createIndex(0, 0), createIndex(m_players.size() - 1, 0), QVector<int> { Qt::DisplayRole,
-                     Qt::EditRole, Qt::DecorationRole});
+    emit dataChanged(createIndex(0, 0), createIndex(m_players.size() - 1, 0), QVector<int> {
+                         Qt::DisplayRole,
+                         Qt::EditRole,
+                         Qt::DecorationRole});
 
     emit modelChanged();
 }
@@ -308,8 +317,6 @@ void SessionModel::endGame()
 
 void SessionModel::sendPointToServer(int index)
 {
-    qDebug() << "CATCH";
-
     m_in << index;
     m_pSocket->flush();
     m_abilityToMakeMoveInOnline = false;
@@ -317,14 +324,11 @@ void SessionModel::sendPointToServer(int index)
 
 void SessionModel::onReadyRead()
 {
-    qDebug() << "CLIENTREADYREAD";
-
     int operation = 0;
     int player = 0;
     int pointIndex = 0;
 
     m_out.startTransaction();
-
     while(!m_out.atEnd())
     {
         m_out >> operation;
@@ -334,7 +338,7 @@ void SessionModel::onReadyRead()
             case(sendPlayerIdOperation):
                 m_out >> player;
                 m_pModel->setCurrentPlayer(player);
-                qDebug() << "sendPlayerIdOperation" << player;
+//                qDebug() << "sendPlayerIdOperation" << player;
             break;
             case(sendPointOperation):
                 m_out >> pointIndex;
@@ -342,20 +346,18 @@ void SessionModel::onReadyRead()
                 m_currentOnlinePlayer = player;
                 if(!m_abilityToMakeMoveInOnline)
                     m_pModel->dfsStart(pointIndex, player);
-                qDebug() << "sendPointOperation" << player << pointIndex;
+//                qDebug() << "sendPointOperation" << player << pointIndex;
             break;
             case(giveMoveOperation):
                 m_abilityToMakeMoveInOnline = true;
                 m_currentOnlinePlayer = m_pModel->currentPlayer();
-                qDebug() << "giveMoveOperation";
+//                qDebug() << "giveMoveOperation";
                 emit readyToMove();
             break;
         }
     }
-
-
     if (!m_out.commitTransaction()){
-        qDebug() << "!commitTransaction" << operation;
+//        qDebug() << "!commitTransaction" << operation;
         return;
     }
 

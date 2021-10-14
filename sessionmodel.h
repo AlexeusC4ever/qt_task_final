@@ -33,16 +33,6 @@ public:
         READ player
         CONSTANT)
 
-//    Q_PROPERTY(
-//        QColor playerColor
-//        READ playerColor
-//        CONSTANT)
-
-//    Q_PROPERTY(
-//        QColor playerColorForArea
-//        READ playerColorForArea
-//        CONSTANT)
-
     Q_PROPERTY(
         FieldModel* model
         READ pModel
@@ -80,9 +70,7 @@ public:
 signals:
     Q_INVOKABLE void addedPoints();
     Q_INVOKABLE void sendWinner(int, QString);
-//    Q_INVOKABLE void saveGameRequest(QString &fileName);
-//    Q_INVOKABLE void loadGameRequest(QString &fileName);
-    void modelChanged(/*FieldModel *newModel*/);
+    void modelChanged();
     Q_INVOKABLE void readyToMove();
 
 private slots:
@@ -93,9 +81,6 @@ private slots:
     void changeFieldModel();
 
 private:
-//    QQmlEngine m_engine;
-//    QQmlContext *m_pContext;
-//    QQmlComponent *m_pComponent;
     std::vector<Player> m_players;
     QLineEdit *m_pLineEditHeight;
     QLabel *m_pLabelHeight;
