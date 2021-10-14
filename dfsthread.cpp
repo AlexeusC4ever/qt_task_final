@@ -213,11 +213,16 @@ int DfsThread::childrenInsideAreaCount(std::vector<Coord> &area)
                 makeCellNonClickable(insideCell);
 //                qDebug() << "COUNT";
             }
+            else if(insideCell->getColor() == Cell::VERTEXCOLOR::White
+                    && areaOpened)
+            {
+                makeCellNonClickable(insideCell);
+            }
         }
         //do a traversing from different sides to count all
         areaOpened = false;
 
-        for(int j = maxBottom; j <= maxTop; --j)
+        for(int j = maxBottom; j >= maxTop; --j)
         {
             Cell *insideCell = m_pModel->getCellByCoords(Coord{i, j});
             if(insideCell->getColor() != Cell::VERTEXCOLOR::White)
@@ -232,6 +237,11 @@ int DfsThread::childrenInsideAreaCount(std::vector<Coord> &area)
                     insideCell->player() != -1){
                 ++children;
                 insideCell->setCounted(true);
+                makeCellNonClickable(insideCell);
+            }
+            else if(insideCell->getColor() == Cell::VERTEXCOLOR::White
+                    && areaOpened)
+            {
                 makeCellNonClickable(insideCell);
             }
         }
