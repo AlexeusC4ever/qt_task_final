@@ -1,0 +1,8 @@
+-IC:/git/final_final
+-IC:/git/build-final_final-Desktop_Qt_6_1_3_MinGW_64_bit-Release
+-IC:/git/final_final/gameserver
+-IC:/git/build-final_final-Desktop_Qt_6_1_3_MinGW_64_bit-Release/gameserver
+-DWIN32
+-o
+C:/git/build-final_final-Desktop_Qt_6_1_3_MinGW_64_bit-Release/moc_cell.cpp
+C:/git/final_final/cell.h

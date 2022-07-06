@@ -1,0 +1,7 @@
+C:/git/build-final_final-Desktop_Qt_6_1_3_MinGW_64_bit-Release/CMakeFiles/gameserver.dir
+C:/git/build-final_final-Desktop_Qt_6_1_3_MinGW_64_bit-Release/CMakeFiles/edit_cache.dir
+C:/git/build-final_final-Desktop_Qt_6_1_3_MinGW_64_bit-Release/CMakeFiles/final_final.dir
+C:/git/build-final_final-Desktop_Qt_6_1_3_MinGW_64_bit-Release/CMakeFiles/rebuild_cache.dir
+C:/git/build-final_final-Desktop_Qt_6_1_3_MinGW_64_bit-Release/gameserver/CMakeFiles/server.dir
+C:/git/build-final_final-Desktop_Qt_6_1_3_MinGW_64_bit-Release/gameserver/CMakeFiles/edit_cache.dir
+C:/git/build-final_final-Desktop_Qt_6_1_3_MinGW_64_bit-Release/gameserver/CMakeFiles/rebuild_cache.dir
